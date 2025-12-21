@@ -20,11 +20,10 @@ struct RootCoordinatorView: View {
         switch appState.currentFlow {
         case .authentication:
             AuthCoordinatorView(appState: appState)
-                .transition(.opacity)
+                .transition(.scale.combined(with: .opacity))
         case .main:
-            // TODO: have to implement later
-            EmptyView()
-            
+            MainRootView(coordinator: MainCoordinator(appState: appState))
+                .transition(.scale.combined(with: .opacity))
         }
     }
 }

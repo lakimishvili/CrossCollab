@@ -19,7 +19,7 @@ struct AuthHeaderView: View {
             
             Text(subtitle)
                 .font(.system(size: 14))
-                .foregroundColor(Color("LightGray"))
+                .foregroundColor(.customGray)
                 .multilineTextAlignment(.center)
         }
     }

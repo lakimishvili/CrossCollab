@@ -37,7 +37,7 @@ class AuthCoordinator: ObservableObject, AuthCoordinatorProtocol, AuthViewProtoc
     }
     
     func makeSignInView() -> SignInView {
-//        let viewModel = SignInViewModel(coordinator: self)
-        return SignInView()
+        let viewModel = SignInViewModel(coordinator: self)
+        return SignInView(viewModel: viewModel)
     }
 }

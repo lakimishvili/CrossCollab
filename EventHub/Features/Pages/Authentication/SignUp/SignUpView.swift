@@ -126,6 +126,7 @@ struct SignUpView: View {
             
         }
         .dismissKeyboardOnTap()
+        .navigationBarBackButtonHidden()
     }
 }
 

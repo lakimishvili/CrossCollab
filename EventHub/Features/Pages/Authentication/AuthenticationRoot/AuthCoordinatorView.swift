@@ -30,9 +30,6 @@ struct AuthCoordinatorView: View {
             coordinator.makeSignUpView()
         case .signIn:
             coordinator.makeSignInView()
-        case .forgotPassword:
-            EmptyView()
-            // TODO: navigation to forgotPassword
         }
     }
 }

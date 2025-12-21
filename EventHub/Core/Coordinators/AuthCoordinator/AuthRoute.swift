@@ -8,5 +8,4 @@
 enum AuthRoute: Hashable {
     case signIn
     case signUp
-    case forgotPassword
 }

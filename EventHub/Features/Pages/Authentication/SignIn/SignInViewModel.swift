@@ -30,6 +30,8 @@ final class SignInViewModel: ObservableObject {
             return
         }
         print("Signing in with email: \(email), password: \(password)")
+        
+        coordinator?.completeAuthentication()
     }
     
     func goSignUp() {

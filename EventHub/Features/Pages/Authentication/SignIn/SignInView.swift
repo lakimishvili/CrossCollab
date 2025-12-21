@@ -10,7 +10,7 @@ import SwiftUI
 import SwiftUI
 
 struct SignInView: View {
-    @StateObject private var viewModel = SignInViewModel()
+    @StateObject var viewModel: SignInViewModel
     
     var body: some View {
         ZStack {
@@ -68,6 +68,8 @@ struct SignInView: View {
             // MARK: - Forgot Password Overlay
             forgotPasswordOverlay
         }
+        .dismissKeyboardOnTap()
+        .navigationBarBackButtonHidden()
     }
 }
 
@@ -127,5 +129,5 @@ private extension SignInView {
 }
 
 #Preview {
-    SignInView()
+    SignInView(viewModel: SignInViewModel())
 }

@@ -1,0 +1,23 @@
+{
+  "images" : [
+    {
+      "filename" : "house-black-silhouette-without-door.png",
+      "idiom" : "universal",
+      "scale" : "1x"
+    },
+    {
+      "filename" : "house-black-silhouette-without-door 1.png",
+      "idiom" : "universal",
+      "scale" : "2x"
+    },
+    {
+      "filename" : "house-black-silhouette-without-door 2.png",
+      "idiom" : "universal",
+      "scale" : "3x"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

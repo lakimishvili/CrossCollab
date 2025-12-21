@@ -30,7 +30,7 @@ struct ForgotPasswordView: View {
                 
                 HStack(spacing: 8) {
                     Image(systemName: "envelope")
-                        .foregroundColor(Color("LightGray"))
+                        .foregroundColor(.customGray)
                         .opacity(0.4)
                     
                     TextField("Enter your email", text: $viewModel.email)
