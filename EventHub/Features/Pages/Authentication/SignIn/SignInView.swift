@@ -9,7 +9,15 @@ import SwiftUI
 
 struct SignInView: View {
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        VStack {
+            Image(systemName: "person.circle")
+                .resizable()
+                .frame(width: 100, height: 100)
+                .foregroundColor(.blue)
+            
+            Text("Sign In View")
+                .font(.title)
+        }
     }
 }
 
