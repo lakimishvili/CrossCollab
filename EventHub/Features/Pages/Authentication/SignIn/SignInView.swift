@@ -70,6 +70,15 @@ struct SignInView: View {
         }
         .dismissKeyboardOnTap()
         .navigationBarBackButtonHidden()
+        .alert("Error", isPresented: $viewModel.showErrorAlert) {
+            Button("OK", role: .cancel) {
+                viewModel.dismissError()
+            }
+        } message: {
+            if let errorMessage = viewModel.errorMessage {
+                Text(errorMessage)
+            }
+        }
     }
 }
 

@@ -7,8 +7,6 @@
 
 import SwiftUI
 
-import SwiftUI
-
 struct ForgotPasswordView: View {
     
     @Binding var isPresented: Bool

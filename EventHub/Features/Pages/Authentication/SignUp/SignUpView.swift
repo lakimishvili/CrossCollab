@@ -42,6 +42,8 @@ struct SignUpView: View {
                         placeholder: "john.doe@company.com",
                         text: $viewModel.email
                     )
+                    .keyboardType(.emailAddress)
+                    .autocapitalization(.none)
                     
                     NumberInputView(
                         number: $viewModel.phoneNumber,
@@ -102,11 +104,12 @@ struct SignUpView: View {
                     )
                     
                     PrimaryButton(
-                        title: "Create Account",
+                        title: viewModel.isLoading ? "Creating Account..." : "Create Account",
                         action: {
-                            viewModel.goSignInPage()
+                            viewModel.validateAndSignUp()
                         }
                     )
+                    .disabled(viewModel.isLoading)
                     .padding(.top, 26)
                     
                     SignInPrompt(
@@ -127,6 +130,15 @@ struct SignUpView: View {
         }
         .dismissKeyboardOnTap()
         .navigationBarBackButtonHidden()
+        .alert("Error", isPresented: $viewModel.showErrorAlert) {
+            Button("OK", role: .cancel) {
+                viewModel.dismissError()
+            }
+        } message: {
+            if let errorMessage = viewModel.errorMessage {
+                Text(errorMessage)
+            }
+        }
     }
 }
 

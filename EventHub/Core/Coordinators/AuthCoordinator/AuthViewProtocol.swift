@@ -6,6 +6,6 @@
 //
 
 protocol AuthViewProtocol: AnyObject {
-    func makeSignUpView() -> SignUpView
-    func makeSignInView() -> SignInView
+   @MainActor func makeSignUpView() -> SignUpView
+   @MainActor func makeSignInView() -> SignInView
 }

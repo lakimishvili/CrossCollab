@@ -8,6 +8,7 @@
 import Combine
 import Foundation
 
+@MainActor
 final class SignUpViewModel: ObservableObject {
     
     @Published var firstName: String = ""
@@ -24,12 +25,18 @@ final class SignUpViewModel: ObservableObject {
     
     @Published var isAgreed: Bool = false
     
+    @Published var isLoading: Bool = false
+    @Published var errorMessage: String?
+    @Published var showErrorAlert: Bool = false
+    
     private(set) var departments = ["Engineering", "Marketing", "Sales", "HR", "Finance"]
     private var cancellables = Set<AnyCancellable>()
     weak var coordinator: AuthCoordinatorProtocol?
+    private weak var appState: AppState?
     
-    init(coordinator: AuthCoordinatorProtocol? = nil) {
+    init(coordinator: AuthCoordinatorProtocol? = nil, appState: AppState? = nil) {
         self.coordinator = coordinator
+        self.appState = appState
     }
     
     // MARK: - Navigation
@@ -41,7 +48,7 @@ final class SignUpViewModel: ObservableObject {
     // MARK: - OTP Methods
     func sendOTP() {
         guard !phoneNumber.isEmpty else {
-            print("Phone number is required")
+            errorMessage = "Phone number is required"
             return
         }
         
@@ -78,28 +85,85 @@ final class SignUpViewModel: ObservableObject {
         }
     }
     
-    // MARK: - Validation
+    // MARK: - Sign Up
     func validateAndSignUp() {
-        guard !firstName.isEmpty,
-              !lastName.isEmpty,
-              !email.isEmpty,
-              !phoneNumber.isEmpty,
-              !selectedDepartment.isEmpty else {
-            print("All fields are required")
+    
+        errorMessage = nil
+        showErrorAlert = false
+        
+        guard !firstName.isEmpty, !lastName.isEmpty else {
+            showError("First and last name required")
             return
         }
         
-        let otp = otpCode.joined()
-        guard otp.count == 6 else {
-            print("OTP is required")
+        guard !email.isEmpty else {
+            showError("Email is required")
             return
         }
         
-        print("Sign up successful!")
-        print("Name: \(firstName) \(lastName)")
-        print("Email: \(email)")
-        print("Phone: \(phoneNumber)")
-        print("Department: \(selectedDepartment)")
-        print("OTP: \(otp)")
+        guard email.contains("@") else {
+            showError("Invalid email format")
+            return
+        }
+        
+        guard !password.isEmpty else {
+            showError("Password is required")
+            return
+        }
+        
+        guard password.count >= 8 else {
+            showError("Password must be at least 8 characters")
+            return
+        }
+        
+        guard password == confirmPassword else {
+            showError("Passwords do not match")
+            return
+        }
+        
+        guard isAgreed else {
+            showError("Please agree to terms and conditions")
+            return
+        }
+        
+        let fullName = "\(firstName) \(lastName)"
+        
+        isLoading = true
+        
+        Task {
+            do {
+                try await appState?.register(
+                    email: email,
+                    password: password,
+                    fullName: fullName,
+                    rememberMe: true
+                )
+                
+                await MainActor.run {
+                    isLoading = false
+                }
+                
+            } catch let error as NetworkError {
+                await MainActor.run {
+                    isLoading = false
+                    showError(error.localizedDescription)
+                }
+            } catch {
+                await MainActor.run {
+                    isLoading = false
+                    showError("An unexpected error occurred")
+                }
+            }
+        }
+    }
+    
+    private func showError(_ message: String) {
+        errorMessage = message
+        showErrorAlert = true
+    }
+    
+    func dismissError() {
+        errorMessage = nil
+        showErrorAlert = false
     }
 }

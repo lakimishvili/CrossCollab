@@ -7,6 +7,7 @@
 
 import Combine
 
+@MainActor
 final class ProfileViewModel: ObservableObject {
     
     weak var coordinator: MainCoordinatorProtocol?
