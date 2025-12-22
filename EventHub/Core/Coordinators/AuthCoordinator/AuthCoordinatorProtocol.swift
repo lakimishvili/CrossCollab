@@ -8,5 +8,4 @@
 protocol AuthCoordinatorProtocol: AnyObject {
     func navigate(to route: AuthRoute)
     func pop()
-    func completeAuthentication()
 }

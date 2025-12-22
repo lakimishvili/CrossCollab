@@ -27,17 +27,15 @@ class AuthCoordinator: ObservableObject, AuthCoordinatorProtocol, AuthViewProtoc
         path.removeLast()
     }
     
-    func completeAuthentication() {
-        appState?.login()
-    }
-    
+    @MainActor
     func makeSignUpView() -> SignUpView {
-        let viewModel = SignUpViewModel(coordinator: self)
+        let viewModel = SignUpViewModel(coordinator: self, appState: appState)
         return SignUpView(viewModel: viewModel)
     }
     
+    @MainActor
     func makeSignInView() -> SignInView {
-        let viewModel = SignInViewModel(coordinator: self)
+        let viewModel = SignInViewModel(coordinator: self, appState: appState)
         return SignInView(viewModel: viewModel)
     }
 }

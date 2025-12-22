@@ -16,7 +16,7 @@ struct AuthCoordinatorView: View {
     
     var body: some View {
         NavigationStack(path: $coordinator.path) {
-            coordinator.makeSignUpView()
+            coordinator.makeSignInView()
                 .navigationDestination(for: AuthRoute.self) { route in
                     destinationView(for: route)
                 }

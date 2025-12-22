@@ -7,6 +7,7 @@
 
 import Foundation
 
+@MainActor
 class MainCoordinator: ObservableObject, MainCoordinatorProtocol, MainViewProtocol {
     private weak var appState: AppState?
     

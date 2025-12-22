@@ -1,23 +1,17 @@
 {
   "images" : [
     {
-      "alignment-insets" : {
-        "bottom" : 0,
-        "left" : -4,
-        "right" : 0,
-        "top" : 0
-      },
-      "filename" : "ticket.png",
+      "filename" : "Container.svg",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "ticket 1.png",
+      "filename" : "Container 1.svg",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "ticket 2.png",
+      "filename" : "Container 2.svg",
       "idiom" : "universal",
       "scale" : "3x"
     }
@@ -25,5 +19,8 @@
   "info" : {
     "author" : "xcode",
     "version" : 1
+  },
+  "properties" : {
+    "template-rendering-intent" : "template"
   }
 }

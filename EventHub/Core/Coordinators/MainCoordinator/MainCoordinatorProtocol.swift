@@ -7,5 +7,5 @@
 
 
 protocol MainCoordinatorProtocol: AnyObject {
-    func logout()
+    @MainActor func logout()
 }
