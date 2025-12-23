@@ -5,7 +5,6 @@
 //  Created by Bacho on 22.12.25.
 //
 
-
 import SwiftUI
 
 struct CustomTabBar: View {
@@ -20,12 +19,9 @@ struct CustomTabBar: View {
     ]
     
     var body: some View {
-        
-        VStack {
-            
-            Rectangle()
-                .fill(Color.gray.opacity(0.3))
-                .frame(height: 1)
+        VStack(spacing: 0) {
+            // Native-style separator
+            Divider()
             
             HStack(spacing: 0) {
                 ForEach(items.indices, id: \.self) { index in
@@ -34,7 +30,6 @@ struct CustomTabBar: View {
                         imageName: items[index].imageName,
                         isActive: selectedTab == items[index].type,
                         scale: 1
-                        
                     )
                     .frame(maxWidth: .infinity)
                     .onTapGesture {
@@ -43,10 +38,9 @@ struct CustomTabBar: View {
                         }
                     }
                 }
-                .padding(.vertical, 10)
-                .background(Color(.systemBackground))
-                
             }
+            .frame(height: 50)
         }
+        .background(Color(.systemBackground))
     }
 }

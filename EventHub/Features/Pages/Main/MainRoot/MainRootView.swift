@@ -41,9 +41,8 @@ struct MainRootView: View {
             }
             
             CustomTabBar(selectedTab: $viewModel.selectedTab)
-                .frame(height: 110)
+                .edgesIgnoringSafeArea(.bottom)
         }
-        .ignoresSafeArea()
     }
 }
 
