@@ -7,17 +7,11 @@
 
 import SwiftUI
 
-struct NotificationUIItem: Identifiable {
-    let id = UUID()
-    let icon: String
-    let title: String
-    let subtitle: String
-    let isRead: Bool
-}
 
 struct NotificationCardView: View {
     
     let item: NotificationUIItem
+    let onTap: () -> Void
     
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
@@ -35,6 +29,7 @@ struct NotificationCardView: View {
                 Text(item.subtitle)
                     .font(.footnote)
                     .foregroundColor(.gray)
+                    .lineLimit(2)
             }
             
             Spacer()
@@ -52,5 +47,8 @@ struct NotificationCardView: View {
                 .stroke(Color.gray.opacity(0.25), lineWidth: 1)
         )
         .cornerRadius(8)
+        .onTapGesture {
+            onTap()
+        }
     }
 }
