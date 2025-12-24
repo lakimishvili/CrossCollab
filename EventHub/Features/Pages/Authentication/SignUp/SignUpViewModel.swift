@@ -86,9 +86,7 @@ final class SignUpViewModel: ObservableObject {
     }
     
     // MARK: - Sign Up
-    // MARK: - Sign Up
     func validateAndSignUp() {
-        // Trim all inputs
         let trimmedFirstName = firstName.trimmingCharacters(in: .whitespacesAndNewlines)
         let trimmedLastName = lastName.trimmingCharacters(in: .whitespacesAndNewlines)
         let trimmedEmail = email.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -118,25 +116,21 @@ final class SignUpViewModel: ObservableObject {
             return
         }
         
-        // ✅ PROPER PASSWORD VALIDATION
         guard trimmedPassword.count >= 8 else {
             showError("Password must be at least 8 characters")
             return
         }
         
-        // Check for uppercase letter
         guard trimmedPassword.rangeOfCharacter(from: .uppercaseLetters) != nil else {
             showError("Password must contain at least one uppercase letter")
             return
         }
         
-        // Check for lowercase letter
         guard trimmedPassword.rangeOfCharacter(from: .lowercaseLetters) != nil else {
             showError("Password must contain at least one lowercase letter")
             return
         }
         
-        // Check for number
         guard trimmedPassword.rangeOfCharacter(from: .decimalDigits) != nil else {
             showError("Password must contain at least one number")
             return
@@ -152,7 +146,6 @@ final class SignUpViewModel: ObservableObject {
             return
         }
         
-        // Use trimmed values
         let fullName = "\(trimmedFirstName) \(trimmedLastName)"
         
         isLoading = true

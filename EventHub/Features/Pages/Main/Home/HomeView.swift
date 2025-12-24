@@ -10,30 +10,30 @@ import SwiftUI
 struct HomeView: View {
     
     @StateObject var viewModel: HomeViewModel
+    @State var showProfile = false
     
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
-                
                 headerSection
-                
                 upcomingEventsSection
-                
                 categoriesSection
-                
                 trendingSection
-                
                 faqSection
             }
             .padding(.horizontal)
             .padding(.bottom, 24)
         }
         .background(Color("customWhite"))
-        .onAppear {
-            viewModel.fetchUpcomingEvents()
+        .task {
+            await viewModel.fetchUpcomingEvents()
         }
         .refreshable {
-            viewModel.fetchUpcomingEvents()
+            await viewModel.fetchUpcomingEvents()
+        }
+        .navigationBarHidden(true)
+        .sheet(isPresented: $showProfile) {
+            viewModel.coordinator?.makeProfileView()
         }
     }
 }
@@ -57,6 +57,9 @@ private extension HomeView {
                     HStack(spacing: 16) {
                         Image(systemName: "bell")
                         Image(systemName: "person.crop.circle")
+                            .onTapGesture {
+                                showProfile.toggle()
+                            }
                     }
                     .font(.title3)
                 }
@@ -93,6 +96,11 @@ private extension HomeView {
                 Text("View all")
                     .font(.subheadline)
                     .foregroundColor(.blue)
+                
+                    .onTapGesture {
+                        viewModel.viewAllEvents()
+                        print("got tapped")
+                    }
             }
             
             if viewModel.isLoading {
@@ -107,11 +115,6 @@ private extension HomeView {
                         .font(.subheadline)
                         .foregroundColor(.red)
                     
-                    Button("Retry") {
-                        viewModel.fetchUpcomingEvents()
-                    }
-                    .font(.subheadline)
-                    .foregroundColor(.blue)
                 }
                 .frame(maxWidth: .infinity)
                 .padding()
@@ -129,11 +132,11 @@ private extension HomeView {
                 VStack(spacing: 12) {
                     ForEach(viewModel.upcomingEvents.prefix(3)) { event in
                         EventCardView(
-                            date: formatEventDate(event.startDateTime),
+                            date: DateHelper.formatEventDate(event.startDateTime),
                             title: event.title,
-                            time: formatEventTime(event.startDateTime),
+                            time: DateHelper.formatEventTime(event.startDateTime),
                             location: event.location,
-                            footer: formatEventFooter(event),
+                            footer: DateHelper.formatEventFooter(event),
                             isDisabled: event.isFull
                         )
                         .onTapGesture {
@@ -144,34 +147,7 @@ private extension HomeView {
             }
         }
     }
-    
-    func formatEventDate(_ dateString: String) -> String {
-        let (month, day) = DateHelper.getMonthDay(dateString)
-        return "\(month)\n\(day)"
-    }
-    
-    func formatEventTime(_ dateString: String) -> String {
-        guard let date = DateHelper.parseDate(dateString) else { return "" }
-        
-        let formatter = DateFormatter()
-        formatter.dateFormat = "hh:mm a"
-        let startTime = formatter.string(from: date)
-        
-        let endDate = date.addingTimeInterval(7200)
-        let endTime = formatter.string(from: endDate)
-        
-        return "\(startTime) - \(endTime)"
-    }
-    
-    func formatEventFooter(_ event: EventListItem) -> String {
-        let spotsLeft = event.capacity - event.confirmedCount
-        
-        if event.isFull {
-            return "\(event.confirmedCount) registered • Full"
-        } else {
-            return "\(event.confirmedCount) registered • \(spotsLeft) spots left"
-        }
-    }
+
 }
 
 private extension HomeView {

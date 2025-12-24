@@ -10,5 +10,5 @@ protocol MainViewProtocol {
     @MainActor func makeBrowseView() -> BrowseView
     @MainActor func makeEventsView() -> EventsView
     @MainActor func makeNotificationsView() -> NotificationsView
-    @MainActor func makeProfileView() -> ProfileView
+    @MainActor func makeEventDetailsView(eventId: Int) -> EventDetailsView 
 }

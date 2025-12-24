@@ -15,12 +15,10 @@ struct CustomTabBar: View {
         TabItem(imageName: "search", buttonText: "Browse", type: .browse),
         TabItem(imageName: "ticket", buttonText: "My Events", type: .events),
         TabItem(imageName: "bell", buttonText: "Notifications", type: .notifications),
-        TabItem(imageName: "profile", buttonText: "Profile", type: .profile)
     ]
     
     var body: some View {
         VStack(spacing: 0) {
-            // Native-style separator
             Divider()
             
             HStack(spacing: 0) {

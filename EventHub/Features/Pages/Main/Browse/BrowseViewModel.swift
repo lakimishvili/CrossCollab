@@ -139,7 +139,6 @@ final class BrowseViewModel: ObservableObject {
     
     // MARK: - Navigate to Event Details
     func viewEventDetails(eventId: Int) {
-        // TODO: Navigate to event details when implemented
-        print("Navigate to event \(eventId)")
+        coordinator?.goEventsDetails(id: eventId)
     }
 }

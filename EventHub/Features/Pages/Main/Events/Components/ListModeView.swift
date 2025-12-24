@@ -19,14 +19,27 @@ struct ListModeView: View {
                     .padding(.horizontal)
                 
                 ForEach(viewModel.allMyEvents) { event in
-                    EventDetailCard(event: event)
-                        .onTapGesture {
-                            viewModel.viewEventDetails(eventId: event.id)
-                        }
+                    EventCardView(
+                        date: DateHelper.formatEventDate(event.startDateTime),
+                        title: event.title,
+                        time: DateHelper.formatEventTime(event.startDateTime),
+                        location: event.location,
+                        footer: formatStatusFooter(event),
+                        isDisabled: false
+                    )
+                    .onTapGesture {
+                        viewModel.viewEventDetails(eventId: event.id)
+                    }
                 }
             }
-            .padding(.vertical)
+            .padding()
         }
-        .background(Color(.systemGray6))
+    }
+    
+    private func formatStatusFooter(_ event: Event) -> String {
+        if let status = event.status {
+            return status.rawValue
+        }
+        return "Registered"
     }
 }

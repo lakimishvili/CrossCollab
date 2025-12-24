@@ -6,9 +6,13 @@
 //
 
 import Foundation
+import SwiftUI
 
 @MainActor
 class MainCoordinator: ObservableObject, MainCoordinatorProtocol, MainViewProtocol {
+    
+    @Published var path = NavigationPath()
+    
     private weak var appState: AppState?
     
     init(appState: AppState) {
@@ -18,6 +22,19 @@ class MainCoordinator: ObservableObject, MainCoordinatorProtocol, MainViewProtoc
     func logout() {
         appState?.logout()
     }
+    
+    func goAllEventsPage() {
+        path.append(MainRoute.allEvents)
+    }
+    
+    func goEventsDetails(id: Int) {
+        path.append(MainRoute.eventDetails(id: id))
+    }
+    
+    func showProfilePage() {
+        path.append(MainRoute.profile)
+    }
+
     
     // MARK: - View Factory Methods
     
@@ -50,8 +67,15 @@ class MainCoordinator: ObservableObject, MainCoordinatorProtocol, MainViewProtoc
     func makeProfileView() -> ProfileView {
         let viewModel = ProfileViewModel(
             coordinator: self,
-//            appState: appState
         )
         return ProfileView(viewModel: viewModel)
+    }
+    
+    func makeEventDetailsView(eventId: Int) -> EventDetailsView {
+        let viewModel = EventDetailsViewModel(
+            eventId: eventId,
+            appState: appState
+        )
+        return EventDetailsView(viewModel: viewModel)
     }
 }

@@ -15,7 +15,6 @@ struct EventsView: View {
         NavigationStack {
             VStack(spacing: 0) {
                 
-                // View Mode Toggle
                 Picker("", selection: $viewModel.viewMode) {
                     ForEach(ViewMode.allCases, id: \.self) { mode in
                         Text(mode.rawValue).tag(mode)

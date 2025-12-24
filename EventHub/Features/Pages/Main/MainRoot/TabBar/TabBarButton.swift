@@ -1,13 +1,6 @@
 //
 //  TabBarButton.swift
-//  RickNMorty
-//
-//  Created by Bacho on 03.12.25.
-//
-
-//
-//  TabBarButton.swift
-//  RickNMorty
+//  EventHub
 //
 //  Created by Bacho on 03.12.25.
 //

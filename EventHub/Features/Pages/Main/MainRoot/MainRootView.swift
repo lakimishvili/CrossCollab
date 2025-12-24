@@ -9,39 +9,48 @@ import SwiftUI
 
 struct MainRootView: View {
     @StateObject private var viewModel: MainRootViewModel
-    private let coordinator: MainCoordinator
+    @StateObject var coordinator: MainCoordinator
     
     init(coordinator: MainCoordinator) {
-        self.coordinator = coordinator
+        _coordinator = StateObject(wrappedValue: coordinator)
         _viewModel = StateObject(wrappedValue: MainRootViewModel(coordinator: coordinator))
     }
     
     var body: some View {
-        ZStack(alignment: .bottom) {
-            TabView(selection: $viewModel.selectedTab) {
-                coordinator.makeHomeView()
-                    .tag(Tabs.home)
-                    .toolbarBackground(.hidden, for: .tabBar)
+        NavigationStack(path: $coordinator.path) {
+            ZStack(alignment: .bottom) {
+                TabView(selection: $viewModel.selectedTab) {
+                    coordinator.makeHomeView()
+                        .tag(Tabs.home)
+                        .toolbarBackground(.hidden, for: .tabBar)
+                    
+                    coordinator.makeBrowseView()
+                        .tag(Tabs.browse)
+                        .toolbarBackground(.hidden, for: .tabBar)
+                    
+                    coordinator.makeEventsView()
+                        .tag(Tabs.events)
+                        .toolbarBackground(.hidden, for: .tabBar)
+                    
+                    coordinator.makeNotificationsView()
+                        .tag(Tabs.notifications)
+                        .toolbarBackground(.hidden, for: .tabBar)
+                }
                 
-                coordinator.makeBrowseView()
-                    .tag(Tabs.browse)
-                    .toolbarBackground(.hidden, for: .tabBar)
+                .navigationDestination(for: MainRoute.self) { route in
+                    switch route {
+                    case .allEvents:
+                        AllEventsView(viewModel: HomeViewModel(coordinator: coordinator))
+                    case .eventDetails(let id):
+                        coordinator.makeEventDetailsView(eventId: id) 
+                    case .profile:
+                        coordinator.makeProfileView()
+                    }
+                }
                 
-                coordinator.makeEventsView()
-                    .tag(Tabs.events)
-                    .toolbarBackground(.hidden, for: .tabBar)
-                
-                coordinator.makeNotificationsView()
-                    .tag(Tabs.notifications)
-                    .toolbarBackground(.hidden, for: .tabBar)
-                
-                coordinator.makeProfileView()
-                    .tag(Tabs.profile)
-                    .toolbarBackground(.hidden, for: .tabBar)
+                CustomTabBar(selectedTab: $viewModel.selectedTab)
+                    .edgesIgnoringSafeArea(.bottom)
             }
-            
-            CustomTabBar(selectedTab: $viewModel.selectedTab)
-                .edgesIgnoringSafeArea(.bottom)
         }
     }
 }

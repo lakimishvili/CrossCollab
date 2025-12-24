@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct CalendarModeView: View {
-    @ObservedObject var viewModel: EventsViewModel 
+    @ObservedObject var viewModel: EventsViewModel
     
     var body: some View {
         ScrollView {
@@ -48,20 +48,34 @@ struct CalendarModeView: View {
                             .padding(.top, 8)
                     } else {
                         ForEach(viewModel.eventsForSelectedDate) { event in
-                            EventDetailCard(event: event)
-                                .onTapGesture {
-                                    viewModel.viewEventDetails(eventId: event.id)
-                                }
+                            EventCardView(
+                                date: DateHelper.formatEventDate(event.startDateTime),
+                                title: event.title,
+                                time: DateHelper.formatEventTime(event.startDateTime),
+                                location: event.location,
+                                footer: formatStatusFooter(event),
+                                isDisabled: false
+                            )
+                            .onTapGesture {
+                                viewModel.viewEventDetails(eventId: event.id)
+                            }
+                            .padding()
                         }
                     }
                 }
             }
             .padding(.vertical)
         }
-        .background(Color(.systemGray6))
     }
     
     private func formattedDate(_ date: Date) -> String {
         date.formatted(date: .abbreviated, time: .omitted)
+    }
+    
+    private func formatStatusFooter(_ event: Event) -> String {
+        if let status = event.status {
+            return status.rawValue
+        }
+        return "Registered"
     }
 }

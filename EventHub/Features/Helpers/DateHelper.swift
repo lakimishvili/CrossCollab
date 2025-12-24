@@ -106,4 +106,32 @@ struct DateHelper {
         }
         return date > Date()
     }
+    
+    static func formatEventDate(_ dateString: String) -> String {
+        let (month, day) = self.getMonthDay(dateString)
+        return "\(month)\n\(day)"
+    }
+    
+    static func formatEventTime(_ dateString: String) -> String {
+        guard let date = self.parseDate(dateString) else { return "" }
+        
+        let formatter = DateFormatter()
+        formatter.dateFormat = "hh:mm a"
+        let startTime = formatter.string(from: date)
+        
+        let endDate = date.addingTimeInterval(7200)
+        let endTime = formatter.string(from: endDate)
+        
+        return "\(startTime) - \(endTime)"
+    }
+    
+    static func formatEventFooter(_ event: EventListItem) -> String {
+        let spotsLeft = event.capacity - event.confirmedCount
+        
+        if event.isFull {
+            return "\(event.confirmedCount) registered • Full"
+        } else {
+            return "\(event.confirmedCount) registered • \(spotsLeft) spots left"
+        }
+    }
 }

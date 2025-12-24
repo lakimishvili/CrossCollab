@@ -1,6 +1,6 @@
 //
 //  Tabs.swift
-//  RickNMorty
+//  EventHub
 //
 //  Created by Bacho on 03.12.25.
 //
@@ -13,7 +13,6 @@ enum Tabs: Int {
     case browse = 1
     case events = 2
     case notifications = 3
-    case profile = 4
 }
 
 struct TabItem {
