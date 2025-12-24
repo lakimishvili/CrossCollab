@@ -22,7 +22,10 @@ class MainCoordinator: ObservableObject, MainCoordinatorProtocol, MainViewProtoc
     // MARK: - View Factory Methods
     
     func makeHomeView() -> HomeView {
-        let viewModel = HomeViewModel(coordinator: self)
+        let viewModel = HomeViewModel(
+            coordinator: self,
+            appState: appState
+        )
         return HomeView(viewModel: viewModel)
     }
     
@@ -32,7 +35,10 @@ class MainCoordinator: ObservableObject, MainCoordinatorProtocol, MainViewProtoc
     }
     
     func makeEventsView() -> EventsView {
-        let viewModel = EventsViewModel(coordinator: self)
+        let viewModel = EventsViewModel(
+            coordinator: self,
+            appState: appState
+        )
         return EventsView(viewModel: viewModel)
     }
     
@@ -42,7 +48,10 @@ class MainCoordinator: ObservableObject, MainCoordinatorProtocol, MainViewProtoc
     }
     
     func makeProfileView() -> ProfileView {
-        let viewModel = ProfileViewModel(coordinator: self)
+        let viewModel = ProfileViewModel(
+            coordinator: self,
+//            appState: appState
+        )
         return ProfileView(viewModel: viewModel)
     }
 }

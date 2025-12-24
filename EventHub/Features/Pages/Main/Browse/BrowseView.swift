@@ -8,75 +8,137 @@
 import SwiftUI
 
 struct BrowseView: View {
-
+    
     @StateObject private var viewModel: BrowseViewModel
-    @State private var searchText = ""
-
-    private let categories = [
-        "All",
-        "Team Building",
-        "Sports",
-        "Workshop",
-        "Happy Friday",
-        "Cultural",
-        "Training",
-        "Social"
-    ]
-
+    
     init(viewModel: BrowseViewModel) {
         _viewModel = StateObject(wrappedValue: viewModel)
     }
-
+    
     var body: some View {
         VStack(spacing: 0) {
             BrowseHeaderView()
-            EventSearchView(text: $searchText)
-            CategoryChipsView(
-                categories: categories,
-                selectedIndex: 0
-            )
-            .padding(.vertical, 8)
-            .background(Color("customWhite"))
-
-            ScrollView {
-                LazyVStack(spacing: 12) {
-
-                    BrowseEventCardView(
-                        month: "JAN",
-                        day: "18",
-                        category: "Team Building",
-                        title: "Annual Team Building Summit",
-                        time: "09:00 AM - 05:00 PM",
-                        location: "Grand Conference Hall",
-                        registeredText: "142 registered",
-                        spotsText: "8 spots left",
-                        statusText: "Available",
-                        isDisabled: false
-                    )
-
-                    BrowseEventCardView(
-                        month: "JAN",
-                        day: "26",
-                        category: "Workshop",
-                        title: "Tech Talk: AI in Business Operations",
-                        time: "11:00 AM - 12:30 PM",
-                        location: "Virtual Meeting",
-                        registeredText: "100 registered",
-                        spotsText: "0 spots left",
-                        statusText: "Full",
-                        isDisabled: true
-                    )
+            
+            EventSearchView(text: $viewModel.searchText)
+            
+            if !viewModel.eventTypes.isEmpty {
+                CategoryChipsView(
+                    categories: viewModel.eventTypes.map { $0.name },
+                    selectedIndex: viewModel.selectedCategoryIndex,
+                    onSelect: { index in
+                        viewModel.selectedCategoryIndex = index
+                    }
+                )
+                .padding(.vertical, 8)
+                .background(Color("customWhite"))
+            }
+            
+            // Loading State
+            if viewModel.isLoading {
+                Spacer()
+                ProgressView()
+                Spacer()
+            }
+            
+            // Error State
+            else if let errorMessage = viewModel.errorMessage {
+                Spacer()
+                VStack(spacing: 12) {
+                    Text(errorMessage)
+                        .font(.subheadline)
+                        .foregroundColor(.red)
+                    
+                    Button("Retry") {
+                        viewModel.fetchEvents()
+                    }
+                    .font(.subheadline)
+                    .foregroundColor(.blue)
                 }
-                .padding()
+                Spacer()
+            }
+            
+            // Empty State
+            else if viewModel.events.isEmpty {
+                Spacer()
+                VStack(spacing: 8) {
+                    Image(systemName: "calendar.badge.exclamationmark")
+                        .font(.system(size: 48))
+                        .foregroundColor(.gray)
+                    
+                    Text("No events found")
+                        .font(.headline)
+                        .foregroundColor(.gray)
+                    
+                    Text("Try adjusting your filters")
+                        .font(.subheadline)
+                        .foregroundColor(.gray)
+                }
+                Spacer()
+            }
+            
+            // Events List
+            else {
+                ScrollView {
+                    LazyVStack(spacing: 12) {
+                        ForEach(viewModel.events) { event in
+                            BrowseEventCardView(
+                                month: DateHelper.getMonthDay(event.startDateTime).month,
+                                day: DateHelper.getMonthDay(event.startDateTime).day,
+                                category: event.eventTypeName,
+                                title: event.title,
+                                time: formatEventTime(event.startDateTime),
+                                location: event.location,
+                                registeredText: "\(event.confirmedCount) registered",
+                                spotsText: formatSpotsText(event),
+                                statusText: event.isFull ? "Full" : "Available",
+                                isDisabled: event.isFull
+                            )
+                            .onTapGesture {
+                                viewModel.viewEventDetails(eventId: event.id)
+                            }
+                        }
+                    }
+                    .padding()
+                }
             }
         }
         .background(Color("customWhite"))
         .navigationBarHidden(true)
+        .onAppear {
+            viewModel.fetchEventTypes()
+            viewModel.fetchEvents()
+        }
+        .refreshable {
+            viewModel.fetchEvents()
+        }
+    }
+    
+    // MARK: - Helper: Format Time
+    private func formatEventTime(_ dateString: String) -> String {
+        guard let date = DateHelper.parseDate(dateString) else { return "" }
+        
+        let formatter = DateFormatter()
+        formatter.dateFormat = "hh:mm a"
+        let startTime = formatter.string(from: date)
+        
+        // Add 2 hours for end time (approximate)
+        let endDate = date.addingTimeInterval(7200)
+        let endTime = formatter.string(from: endDate)
+        
+        return "\(startTime) - \(endTime)"
+    }
+    
+    // MARK: - Helper: Format Spots
+    private func formatSpotsText(_ event: EventListItem) -> String {
+        let spotsLeft = event.capacity - event.confirmedCount
+        
+        if event.isFull {
+            return "0 spots left"
+        } else {
+            return "\(spotsLeft) spots left"
+        }
     }
 }
-
-
-
 
 #Preview {
     BrowseView(viewModel: BrowseViewModel())

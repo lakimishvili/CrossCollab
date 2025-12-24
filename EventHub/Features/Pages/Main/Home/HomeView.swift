@@ -4,6 +4,7 @@
 //
 //  Created by Bacho on 22.12.25.
 //
+
 import SwiftUI
 
 struct HomeView: View {
@@ -28,6 +29,12 @@ struct HomeView: View {
             .padding(.bottom, 24)
         }
         .background(Color("customWhite"))
+        .onAppear {
+            viewModel.fetchUpcomingEvents()
+        }
+        .refreshable {
+            viewModel.fetchUpcomingEvents()
+        }
     }
 }
 
@@ -55,16 +62,14 @@ private extension HomeView {
                 }
                 .padding(.vertical, 12)
                 
-                // Bottom border
                 Rectangle()
                     .fill(Color.gray.opacity(0.3))
                     .frame(height: 1)
             }
             .background(Color.white)
             
-            // MARK: - Greeting Section (NO white background)
             VStack(alignment: .leading, spacing: 4) {
-                Text("Welcome back, Sarah")
+                Text("Welcome back, \(viewModel.userName)")
                     .font(.title2.bold())
                 
                 Text("Stay connected with upcoming company events and activities.")
@@ -73,7 +78,6 @@ private extension HomeView {
             }
         }
     }
-
 }
 
 private extension HomeView {
@@ -84,39 +88,88 @@ private extension HomeView {
             HStack {
                 Text("Upcoming Events")
                     .fontWeight(.regular)
-                    
+                
                 Spacer()
                 Text("View all")
                     .font(.subheadline)
                     .foregroundColor(.blue)
             }
             
-            VStack(spacing: 12) {
-                EventCardView(
-                    date: "JAN\n18",
-                    title: "Annual Team Building Summit",
-                    time: "08:00 AM - 05:00 PM",
-                    location: "Grand Conference Hall",
-                    footer: "102 registered • 8 spots left"
-                )
-                
-                EventCardView(
-                    date: "JAN\n20",
-                    title: "Leadership Workshop",
-                    time: "02:00 PM - 04:30 PM",
-                    location: "Training Room B",
-                    footer: "28 registered • 2 spots left"
-                )
-                
-                EventCardView(
-                    date: "JAN\n24",
-                    title: "Happy Friday: Game Night",
-                    time: "06:00 PM - 09:00 PM",
-                    location: "Recreation Lounge",
-                    footer: "30 registered • Full",
-                    isDisabled: true
-                )
+            if viewModel.isLoading {
+                ProgressView()
+                    .frame(maxWidth: .infinity)
+                    .padding()
             }
+            
+            else if let errorMessage = viewModel.errorMessage {
+                VStack(spacing: 12) {
+                    Text(errorMessage)
+                        .font(.subheadline)
+                        .foregroundColor(.red)
+                    
+                    Button("Retry") {
+                        viewModel.fetchUpcomingEvents()
+                    }
+                    .font(.subheadline)
+                    .foregroundColor(.blue)
+                }
+                .frame(maxWidth: .infinity)
+                .padding()
+            }
+            
+            else if viewModel.upcomingEvents.isEmpty {
+                Text("No upcoming events")
+                    .font(.subheadline)
+                    .foregroundColor(.gray)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+            }
+            
+            else {
+                VStack(spacing: 12) {
+                    ForEach(viewModel.upcomingEvents.prefix(3)) { event in
+                        EventCardView(
+                            date: formatEventDate(event.startDateTime),
+                            title: event.title,
+                            time: formatEventTime(event.startDateTime),
+                            location: event.location,
+                            footer: formatEventFooter(event),
+                            isDisabled: event.isFull
+                        )
+                        .onTapGesture {
+                            viewModel.viewEventDetails(eventId: event.id)
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    func formatEventDate(_ dateString: String) -> String {
+        let (month, day) = DateHelper.getMonthDay(dateString)
+        return "\(month)\n\(day)"
+    }
+    
+    func formatEventTime(_ dateString: String) -> String {
+        guard let date = DateHelper.parseDate(dateString) else { return "" }
+        
+        let formatter = DateFormatter()
+        formatter.dateFormat = "hh:mm a"
+        let startTime = formatter.string(from: date)
+        
+        let endDate = date.addingTimeInterval(7200)
+        let endTime = formatter.string(from: endDate)
+        
+        return "\(startTime) - \(endTime)"
+    }
+    
+    func formatEventFooter(_ event: EventListItem) -> String {
+        let spotsLeft = event.capacity - event.confirmedCount
+        
+        if event.isFull {
+            return "\(event.confirmedCount) registered • Full"
+        } else {
+            return "\(event.confirmedCount) registered • \(spotsLeft) spots left"
         }
     }
 }
@@ -129,11 +182,34 @@ private extension HomeView {
             
             LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 3), spacing: 12) {
                 CategoryItem(icon: "categoryTeam", title: "Team Building", count: "12 events")
+                    .onTapGesture {
+                        viewModel.viewCategory(categoryName: "Team Building")
+                    }
+                
                 CategoryItem(icon: "categorySport", title: "Sports", count: "8 events")
+                    .onTapGesture {
+                        viewModel.viewCategory(categoryName: "Sports")
+                    }
+                
                 CategoryItem(icon: "categoryWorkshop", title: "Workshops", count: "18 events")
+                    .onTapGesture {
+                        viewModel.viewCategory(categoryName: "Workshops")
+                    }
+                
                 CategoryItem(icon: "categoryHappyFridays", title: "Happy Fridays", count: "4 events")
+                    .onTapGesture {
+                        viewModel.viewCategory(categoryName: "Happy Friday")
+                    }
+                
                 CategoryItem(icon: "categoryCulture", title: "Cultural", count: "6 events")
+                    .onTapGesture {
+                        viewModel.viewCategory(categoryName: "Cultural")
+                    }
+                
                 CategoryItem(icon: "categoryWellness", title: "Wellness", count: "9 events")
+                    .onTapGesture {
+                        viewModel.viewCategory(categoryName: "Training")
+                    }
             }
         }
     }
@@ -151,16 +227,15 @@ private extension HomeView {
             
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 12) {
-                    TrendingCard(
-                        title: "Tech Talk: AI in Business",
-                        date: "Jan 26, 2025"
-                    )
-
-                    TrendingCard(
-                        title: "Annual Hackathon",
-                        date: "Feb 02, 2025"
-                    )
-
+                    ForEach(viewModel.upcomingEvents.prefix(2)) { event in
+                        TrendingCard(
+                            title: event.title,
+                            date: DateHelper.formatDate(event.startDateTime, format: "MMM dd, yyyy")
+                        )
+                        .onTapGesture {
+                            viewModel.viewEventDetails(eventId: event.id)
+                        }
+                    }
                 }
             }
         }
