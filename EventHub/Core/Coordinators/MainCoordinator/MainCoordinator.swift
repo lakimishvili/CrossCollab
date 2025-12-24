@@ -60,7 +60,10 @@ class MainCoordinator: ObservableObject, MainCoordinatorProtocol, MainViewProtoc
     }
     
     func makeNotificationsView() -> NotificationsView {
-        let viewModel = NotificationsViewModel(coordinator: self)
+        let viewModel = NotificationsViewModel(
+            coordinator: self,
+            appState: appState
+        )
         return NotificationsView(viewModel: viewModel)
     }
     

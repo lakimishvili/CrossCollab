@@ -12,7 +12,7 @@ final class RealEventService: EventServiceProtocol {
     static let shared = RealEventService()
     private init() {}
     
-    private let baseURL = "https://nonirrationally-cinderous-marcy.ngrok-free.dev/api"
+    private let baseURL = "http://54.93.219.66:8080/api"
     
     // MARK: - Get Event Types
     func getEventTypes() async throws -> [EventType] {
@@ -35,40 +35,7 @@ final class RealEventService: EventServiceProtocol {
             }
         }
         
-        let response: [String: Any] = try await fetchJSON(from: endpoint)
-        
-        guard let dataArray = response["data"] as? [[String: Any]] else {
-            throw NetworkError.decodingFailed
-        }
-        
-        let jsonData = try JSONSerialization.data(withJSONObject: dataArray)
-        let decoder = JSONDecoder()
-        return try decoder.decode([EventListItem].self, from: jsonData)
-    }
-    
-    private func fetchJSON(from endpoint: String) async throws -> [String: Any] {
-        guard let url = URL(string: "\(baseURL)\(endpoint)") else {
-            throw NetworkError.invalidURL
-        }
-        
-        var request = URLRequest(url: url)
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        
-        let (data, response) = try await URLSession.shared.data(for: request)
-        
-        guard let httpResponse = response as? HTTPURLResponse else {
-            throw NetworkError.invalidResponse
-        }
-        
-        guard (200...299).contains(httpResponse.statusCode) else {
-            throw NetworkError.serverError(httpResponse.statusCode)
-        }
-        
-        guard let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
-            throw NetworkError.decodingFailed
-        }
-        
-        return json
+        return try await fetch(from: endpoint)
     }
     
     // MARK: - Get Event Details

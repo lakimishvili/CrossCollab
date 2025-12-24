@@ -10,6 +10,7 @@ struct NotificationSectionView: View {
     
     let title: String
     let items: [NotificationUIItem]
+    let onTap: (NotificationUIItem) -> Void 
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -22,7 +23,9 @@ struct NotificationSectionView: View {
             
             VStack(spacing: 12) {
                 ForEach(items) { item in
-                    NotificationCardView(item: item)
+                    NotificationCardView(item: item) {
+                        onTap(item)
+                    }
                 }
             }
             .padding(.horizontal)
