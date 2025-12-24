@@ -15,7 +15,7 @@ final class AuthService {
     
     // MARK: - Singleton (optional - can use DI instead)
     static let shared = AuthService(
-        networkService: NetworkService.shared,
+        networkService: MockNetworkService(),
         keychainManager: KeychainManager.shared
     )
     
