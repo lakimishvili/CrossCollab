@@ -12,7 +12,7 @@ final class NetworkService: NetworkServiceProtocol {
     static let shared = NetworkService()
     private init() {}
     
-    private let baseURL = "https://your-backend-url.com/api"
+    private let baseURL = "https://nonirrationally-cinderous-marcy.ngrok-free.dev/api"
     
     // MARK: - Generic Fetch
     private func fetch<T: Decodable>(from endpoint: String, method: String = "GET", body: Data? = nil, token: String? = nil) async throws -> T {

@@ -26,6 +26,7 @@ final class AppState: ObservableObject {
             self.currentFlow = .main
             self.currentUserId = authService.currentUserId
             self.currentUserRole = authService.currentUserRole
+            self.currentUserName = authService.currentUserName
         } else {
             self.currentFlow = .authentication
         }

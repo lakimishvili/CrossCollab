@@ -86,37 +86,63 @@ final class SignUpViewModel: ObservableObject {
     }
     
     // MARK: - Sign Up
+    // MARK: - Sign Up
     func validateAndSignUp() {
-    
+        // Trim all inputs
+        let trimmedFirstName = firstName.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedLastName = lastName.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedEmail = email.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedPassword = password.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedConfirmPassword = confirmPassword.trimmingCharacters(in: .whitespacesAndNewlines)
+        
         errorMessage = nil
         showErrorAlert = false
         
-        guard !firstName.isEmpty, !lastName.isEmpty else {
+        guard !trimmedFirstName.isEmpty, !trimmedLastName.isEmpty else {
             showError("First and last name required")
             return
         }
         
-        guard !email.isEmpty else {
+        guard !trimmedEmail.isEmpty else {
             showError("Email is required")
             return
         }
         
-        guard email.contains("@") else {
+        guard trimmedEmail.contains("@") else {
             showError("Invalid email format")
             return
         }
         
-        guard !password.isEmpty else {
+        guard !trimmedPassword.isEmpty else {
             showError("Password is required")
             return
         }
         
-        guard password.count >= 8 else {
+        // ✅ PROPER PASSWORD VALIDATION
+        guard trimmedPassword.count >= 8 else {
             showError("Password must be at least 8 characters")
             return
         }
         
-        guard password == confirmPassword else {
+        // Check for uppercase letter
+        guard trimmedPassword.rangeOfCharacter(from: .uppercaseLetters) != nil else {
+            showError("Password must contain at least one uppercase letter")
+            return
+        }
+        
+        // Check for lowercase letter
+        guard trimmedPassword.rangeOfCharacter(from: .lowercaseLetters) != nil else {
+            showError("Password must contain at least one lowercase letter")
+            return
+        }
+        
+        // Check for number
+        guard trimmedPassword.rangeOfCharacter(from: .decimalDigits) != nil else {
+            showError("Password must contain at least one number")
+            return
+        }
+        
+        guard trimmedPassword == trimmedConfirmPassword else {
             showError("Passwords do not match")
             return
         }
@@ -126,15 +152,16 @@ final class SignUpViewModel: ObservableObject {
             return
         }
         
-        let fullName = "\(firstName) \(lastName)"
+        // Use trimmed values
+        let fullName = "\(trimmedFirstName) \(trimmedLastName)"
         
         isLoading = true
         
         Task {
             do {
                 try await appState?.register(
-                    email: email,
-                    password: password,
+                    email: trimmedEmail,
+                    password: trimmedPassword,
                     fullName: fullName,
                     rememberMe: true
                 )

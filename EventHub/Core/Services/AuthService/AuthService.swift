@@ -15,7 +15,7 @@ final class AuthService {
     
     // MARK: - Singleton (optional - can use DI instead)
     static let shared = AuthService(
-        networkService: MockNetworkService(),
+        networkService: NetworkService.shared,
         keychainManager: KeychainManager.shared
     )
     
@@ -26,34 +26,33 @@ final class AuthService {
     }
     
     // MARK: - Login
-    func login(email: String, password: String, rememberMe: Bool = true) async throws -> LoginResponse {
+    func login(email: String, password: String, rememberMe: Bool) async throws -> LoginResponse {
         let response = try await networkService.login(email: email, password: password)
         
         if rememberMe {
             _ = keychainManager.saveToken(response.token)
             _ = keychainManager.saveUserId(response.userId)
             _ = keychainManager.saveUserRole(response.role)
+            _ = keychainManager.saveUserName(response.fullName)
         }
         
         return response
     }
     
     // MARK: - Register
-    func register(email: String, password: String, fullName: String, rememberMe: Bool = true) async throws -> LoginResponse {
-        let response = try await networkService.register(
-            email: email,
-            password: password,
-            fullName: fullName
-        )
+    func register(email: String, password: String, fullName: String, rememberMe: Bool) async throws -> LoginResponse {
+        let response = try await networkService.register(email: email, password: password, fullName: fullName)
         
         if rememberMe {
             _ = keychainManager.saveToken(response.token)
             _ = keychainManager.saveUserId(response.userId)
             _ = keychainManager.saveUserRole(response.role)
+            _ = keychainManager.saveUserName(response.fullName)
         }
         
         return response
     }
+
     
     // MARK: - Logout
     func logout() {
@@ -84,5 +83,9 @@ final class AuthService {
     
     var currentUserRole: String? {
         keychainManager.currentUserRole
+    }
+    
+    var currentUserName: String? {
+        return keychainManager.currentUserName
     }
 }

@@ -9,65 +9,88 @@ import Foundation
 import Security
 
 final class KeychainManager {
-    static let shared = KeychainManager()
     
+    static let shared = KeychainManager()
     private init() {}
     
-    // MARK: - Keys
-    private enum Keys {
-        static let authToken = "com.eventhub.authToken"
-        static let userId = "com.eventhub.userId"
-        static let userRole = "com.eventhub.userRole"
-    }
+    private let service = "com.eventhub.app"
+    private let tokenKey = "com.eventhub.authToken"
+    private let userIdKey = "com.eventhub.userId"
+    private let userRoleKey = "com.eventhub.userRole"
+    private let userNameKey = "com.eventhub.userName"
     
-    // MARK: - Save Token
+    // MARK: - Token
     func saveToken(_ token: String) -> Bool {
-        return save(key: Keys.authToken, value: token)
+        return save(key: tokenKey, value: token)
     }
     
-    // MARK: - Load Token
     func loadToken() -> String? {
-        return load(key: Keys.authToken)
+        return load(key: tokenKey)
     }
     
-    // MARK: - Delete Token
     func deleteToken() -> Bool {
-        return delete(key: Keys.authToken)
+        return delete(key: tokenKey)
     }
     
-    // MARK: - Save User Info
+    // MARK: - User ID
     func saveUserId(_ userId: Int) -> Bool {
-        return save(key: Keys.userId, value: "\(userId)")
+        return save(key: userIdKey, value: "\(userId)")
     }
     
     func loadUserId() -> Int? {
-        guard let value = load(key: Keys.userId) else { return nil }
+        guard let value = load(key: userIdKey) else { return nil }
         return Int(value)
     }
     
+    // MARK: - User Role
     func saveUserRole(_ role: String) -> Bool {
-        return save(key: Keys.userRole, value: role)
+        return save(key: userRoleKey, value: role)
     }
     
     func loadUserRole() -> String? {
-        return load(key: Keys.userRole)
+        return load(key: userRoleKey)
     }
     
-    // MARK: - Clear All (Logout)
+    // MARK: - User Name (NEW!)
+    func saveUserName(_ name: String) -> Bool {
+        return save(key: userNameKey, value: name)
+    }
+    
+    func loadUserName() -> String? {
+        return load(key: userNameKey)
+    }
+    
+    // MARK: - Clear All
     func clearAll() -> Bool {
-        let tokenDeleted = deleteToken()
-        let userIdDeleted = delete(key: Keys.userId)
-        let roleDeleted = delete(key: Keys.userRole)
-        
-        return tokenDeleted && userIdDeleted && roleDeleted
+        let results = [
+            deleteToken(),
+            delete(key: userIdKey),
+            delete(key: userRoleKey),
+            delete(key: userNameKey)
+        ]
+        return results.allSatisfy { $0 }
+    }
+    
+    // MARK: - Convenience Properties
+    var isLoggedIn: Bool {
+        return loadToken() != nil
+    }
+    
+    var currentUserId: Int? {
+        return loadUserId()
+    }
+    
+    var currentUserRole: String? {
+        return loadUserRole()
+    }
+    
+    var currentUserName: String? { 
+        return loadUserName()
     }
     
     // MARK: - Private Helpers
-    
     private func save(key: String, value: String) -> Bool {
-        guard let data = value.data(using: .utf8) else { return false }
-        
-        _ = delete(key: key)
+        let data = Data(value.utf8)
         
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
@@ -75,6 +98,8 @@ final class KeychainManager {
             kSecValueData as String: data,
             kSecAttrAccessible as String: kSecAttrAccessibleAfterFirstUnlock
         ]
+        
+        SecItemDelete(query as CFDictionary)
         
         let status = SecItemAdd(query as CFDictionary, nil)
         return status == errSecSuccess
@@ -93,11 +118,11 @@ final class KeychainManager {
         
         guard status == errSecSuccess,
               let data = result as? Data,
-              let string = String(data: data, encoding: .utf8) else {
+              let value = String(data: data, encoding: .utf8) else {
             return nil
         }
         
-        return string
+        return value
     }
     
     private func delete(key: String) -> Bool {
@@ -108,19 +133,5 @@ final class KeychainManager {
         
         let status = SecItemDelete(query as CFDictionary)
         return status == errSecSuccess || status == errSecItemNotFound
-    }
-}
-
-extension KeychainManager {
-    var isLoggedIn: Bool {
-        return loadToken() != nil
-    }
-    
-    var currentUserId: Int? {
-        return loadUserId()
-    }
-    
-    var currentUserRole: String? {
-        return loadUserRole()
     }
 }
