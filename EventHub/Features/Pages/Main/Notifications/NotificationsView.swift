@@ -39,7 +39,7 @@ struct NotificationsView: View {
             isRead: true
         ),
         NotificationUIItem(
-            icon: "calendar.badge.xmark",
+            icon: "calendar.badge.minus",
             title: "Cancellation",
             subtitle: "Your registration for 'Wellness Wednesday Yoga' has been cancelled.",
             isRead: true
