@@ -106,7 +106,9 @@ struct SignUpView: View {
                     PrimaryButton(
                         title: viewModel.isLoading ? "Creating Account..." : "Create Account",
                         action: {
-                            viewModel.validateAndSignUp()
+                            Task {
+                               await viewModel.validateAndSignUp()
+                            }
                         }
                     )
                     .disabled(viewModel.isLoading)

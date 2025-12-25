@@ -47,8 +47,8 @@ final class BrowseViewModel: ObservableObject {
     }
     
     // MARK: - Fetch Event Types
-    func fetchEventTypes() {
-        Task {
+    func fetchEventTypes() async {
+  
             do {
                 let types = try await eventService.getEventTypes()
                 
@@ -58,16 +58,14 @@ final class BrowseViewModel: ObservableObject {
                 
             } catch {
                 print("Failed to fetch event types: \(error)")
-            }
         }
     }
     
     // MARK: - Fetch Events
-    func fetchEvents() {
+    func fetchEvents() async {
         isLoading = true
         errorMessage = nil
         
-        Task {
             do {
                 let events = try await eventService.getEvents(filters: nil)
                 
@@ -86,7 +84,6 @@ final class BrowseViewModel: ObservableObject {
                     self.isLoading = false
                     self.errorMessage = "Failed to load events"
                 }
-            }
         }
     }
     
@@ -97,25 +94,20 @@ final class BrowseViewModel: ObservableObject {
         
         Task {
             do {
-                // Build filters
                 var filters = EventFilters()
                 
-                // Category filter (if not "All")
                 if selectedCategoryIndex > 0, selectedCategoryIndex < eventTypes.count {
                     filters.eventTypeId = eventTypes[selectedCategoryIndex].id
                 }
                 
-                // Search filter
                 if !searchText.isEmpty {
                     filters.searchKeyword = searchText
                 }
                 
-                // Availability filter
                 if onlyAvailable {
                     filters.onlyAvailable = true
                 }
                 
-                // Fetch with filters
                 let filteredEvents = try await eventService.getEvents(filters: filters)
                 
                 await MainActor.run {

@@ -15,7 +15,7 @@ struct EventListItem: Codable, Identifiable {
     let startDateTime: String
     let location: String
     let capacity: Int
-    let confirmedCount: Int
+    var confirmedCount: Int
     let isFull: Bool
     let imageUrl: String?
     let tags: [String]
@@ -36,7 +36,7 @@ struct EventDetails: Codable, Identifiable {
     let endDateTime: String
     let location: String
     let capacity: Int
-    let confirmedCount: Int
+    var confirmedCount: Int
     let waitlistedCount: Int
     let isFull: Bool
     let tags: [String]

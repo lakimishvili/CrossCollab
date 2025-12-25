@@ -26,10 +26,14 @@ struct HomeView: View {
         }
         .background(Color("customWhite"))
         .task {
-            await viewModel.fetchUpcomingEvents()
+            if viewModel.upcomingEvents.isEmpty {
+                await viewModel.fetchUpcomingEvents()
+            }
         }
         .refreshable {
-            await viewModel.fetchUpcomingEvents()
+            if viewModel.upcomingEvents.isEmpty {
+                await viewModel.fetchUpcomingEvents()
+            }
         }
         .navigationBarHidden(true)
         .sheet(isPresented: $showProfile) {
@@ -155,7 +159,7 @@ private extension HomeView {
     var categoriesSection: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Browse by Category")
-            
+                        
             LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 3), spacing: 12) {
                 CategoryItem(icon: "categoryTeam", title: "Team Building", count: "12 events")
                     .onTapGesture {

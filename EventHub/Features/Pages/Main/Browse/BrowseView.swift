@@ -49,7 +49,9 @@ struct BrowseView: View {
                         .foregroundColor(.red)
                     
                     Button("Retry") {
-                        viewModel.fetchEvents()
+                        Task {
+                            await viewModel.fetchEvents()
+                        }
                     }
                     .font(.subheadline)
                     .foregroundColor(.blue)
@@ -104,12 +106,16 @@ struct BrowseView: View {
         }
         .background(Color("customWhite"))
         .navigationBarHidden(true)
-        .onAppear {
-            viewModel.fetchEventTypes()
-            viewModel.fetchEvents()
+        .task {
+            if viewModel.events.isEmpty {
+                await viewModel.fetchEventTypes()
+                await viewModel.fetchEvents()
+            }
         }
         .refreshable {
-            viewModel.fetchEvents()
+            if viewModel.events.isEmpty {
+                await viewModel.fetchEvents()
+            }
         }
     }
     

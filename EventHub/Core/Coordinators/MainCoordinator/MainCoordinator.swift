@@ -34,6 +34,11 @@ class MainCoordinator: ObservableObject, MainCoordinatorProtocol, MainViewProtoc
     func showProfilePage() {
         path.append(MainRoute.profile)
     }
+    
+    func pop() {
+        guard !path.isEmpty else { return }
+        path.removeLast()
+    }
 
     
     // MARK: - View Factory Methods
@@ -77,8 +82,17 @@ class MainCoordinator: ObservableObject, MainCoordinatorProtocol, MainViewProtoc
     func makeEventDetailsView(eventId: Int) -> EventDetailsView {
         let viewModel = EventDetailsViewModel(
             eventId: eventId,
-            appState: appState
+            appState: appState,
+            coordinator: self
         )
         return EventDetailsView(viewModel: viewModel)
+    }
+    
+    func makeAllEventsView() -> AllEventsView {
+        let viewModel = HomeViewModel(
+            coordinator: self,
+            appState: appState
+        )
+        return AllEventsView(viewModel: viewModel)
     }
 }

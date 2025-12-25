@@ -7,8 +7,6 @@
 
 import SwiftUI
 
-import SwiftUI
-
 struct SignInView: View {
     @StateObject var viewModel: SignInViewModel
     
@@ -52,7 +50,9 @@ struct SignInView: View {
                 // MARK: - Actions
                 VStack(spacing: 16) {
                     PrimaryButton(title: "Sign In") {
-                        viewModel.signIn()
+                        Task {
+                            await viewModel.signIn()
+                        }
                     }
                     
                     SignInPrompt(

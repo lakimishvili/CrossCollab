@@ -8,14 +8,13 @@
 import SwiftUI
 
 struct AllEventsView: View {
-    @ObservedObject var viewModel: HomeViewModel
-    @Environment(\.dismiss) var dismiss
+    @StateObject var viewModel: HomeViewModel
     
     var body: some View {
         VStack(spacing: 0) {
             CustomNavigationBar(
                 title: "All Upcoming Events",
-                onBack: { dismiss() }
+                onBack: { viewModel.goBack() }
             )
             List(viewModel.upcomingEvents, id: \.id) { event in
                 EventCardView(
@@ -35,10 +34,14 @@ struct AllEventsView: View {
             }
             .navigationBarHidden(true)
             .task {
-                await viewModel.fetchUpcomingEvents()
+                if viewModel.upcomingEvents.isEmpty {
+                    await viewModel.fetchUpcomingEvents()
+                }
             }
             .refreshable {
-                await viewModel.fetchUpcomingEvents()
+                if viewModel.upcomingEvents.isEmpty {
+                    await viewModel.fetchUpcomingEvents()
+                }
             }
         }
     }

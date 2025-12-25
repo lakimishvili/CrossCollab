@@ -19,15 +19,18 @@ final class EventDetailsViewModel: ObservableObject {
     private let eventId: Int
     private let eventService: EventService
     private weak var appState: AppState?
+    weak var coordinator: MainCoordinatorProtocol?
     
     init(
         eventId: Int,
         eventService: EventService = EventService.shared,
-        appState: AppState? = nil
+        appState: AppState? = nil,
+        coordinator: MainCoordinatorProtocol? = nil
     ) {
         self.eventId = eventId
         self.eventService = eventService
         self.appState = appState
+        self.coordinator = coordinator
     }
     
     func loadEvent() async {
@@ -69,19 +72,23 @@ final class EventDetailsViewModel: ObservableObject {
         isRegistering = true
         
         do {
-            _ = try await eventService.registerForEvent(
-                eventId: eventId,
-                userId: userId
-            )
+            _ = try await eventService.registerForEvent(eventId: eventId, userId: userId)
+            self.isRegistered = true
             
-            isRegistering = false
-            isRegistered = true
+            if var currentEvent = self.event {
+                currentEvent.confirmedCount += 1
+                self.event = currentEvent
+            }
             
-            await loadEvent()
+            self.isRegistering = false
             
         } catch {
             errorMessage = "Failed to register"
             isRegistering = false
         }
+    }
+    
+    func goBack() {
+        coordinator?.pop()
     }
 }

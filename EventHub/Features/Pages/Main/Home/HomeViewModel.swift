@@ -43,21 +43,28 @@ final class HomeViewModel: ObservableObject {
     
     // MARK: - Fetch Upcoming Events
     func fetchUpcomingEvents() async {
+        
+        guard upcomingEvents.isEmpty else { return }
         isLoading = true
+        
         errorMessage = nil
         
         do {
             let events = try await eventService.getUpcomingEvents(limit: 5)
-            upcomingEvents = events
-            isLoading = false
-
-        } catch let error as NetworkError {
-            isLoading = false
-            errorMessage = error.localizedDescription
             
+            self.upcomingEvents = events
+            self.isLoading = false
+            
+        } catch let error as NetworkError {
+            self.isLoading = false
+            if upcomingEvents.isEmpty {
+                errorMessage = error.localizedDescription
+            }
         } catch {
-            isLoading = false
-            errorMessage = "Failed to load events"
+            self.isLoading = false
+            if upcomingEvents.isEmpty {
+                errorMessage = "No events found"
+            }
         }
     }
     
@@ -75,5 +82,9 @@ final class HomeViewModel: ObservableObject {
     // MARK: - Navigate to all events
     func viewAllEvents() {
         coordinator?.goAllEventsPage()
+    }
+    
+    func goBack() {
+        coordinator?.pop()
     }
 }

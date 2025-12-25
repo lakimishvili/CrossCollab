@@ -40,7 +40,7 @@ struct MainRootView: View {
                 .navigationDestination(for: MainRoute.self) { route in
                     switch route {
                     case .allEvents:
-                        AllEventsView(viewModel: HomeViewModel(coordinator: coordinator))
+                        coordinator.makeAllEventsView()
                     case .eventDetails(let id):
                         coordinator.makeEventDetailsView(eventId: id) 
                     case .profile:

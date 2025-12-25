@@ -30,7 +30,7 @@ final class SignInViewModel: ObservableObject {
         rememberMe.toggle()
     }
     
-    func signIn() {
+    func signIn() async {
         errorMessage = nil
         showErrorAlert = false
         
@@ -41,24 +41,22 @@ final class SignInViewModel: ObservableObject {
         
         isLoading = true
         
-        Task {
-            do {
-                try await appState?.login(email: email, password: password, rememberMe: rememberMe)
-                
-                await MainActor.run {
-                    isLoading = false
-                }
-                
-            } catch let error as NetworkError {
-                await MainActor.run {
-                    isLoading = false
-                    showError(error.localizedDescription)
-                }
-            } catch {
-                await MainActor.run {
-                    isLoading = false
-                    showError("An unexpected error occurred")
-                }
+        do {
+            try await appState?.login(email: email, password: password, rememberMe: rememberMe)
+            
+            await MainActor.run {
+                isLoading = false
+            }
+            
+        } catch let error as NetworkError {
+            await MainActor.run {
+                isLoading = false
+                showError(error.localizedDescription)
+            }
+        } catch {
+            await MainActor.run {
+                isLoading = false
+                showError("An unexpected error occurred")
             }
         }
     }

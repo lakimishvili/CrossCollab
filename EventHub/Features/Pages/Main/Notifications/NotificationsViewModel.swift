@@ -43,7 +43,6 @@ final class NotificationsViewModel: ObservableObject {
             var newItems: [NotificationUIItem] = []
             var earlierItems: [NotificationUIItem] = []
             
-            // Recent registration confirmations
             for (index, registration) in registrations.prefix(2).enumerated() {
                 newItems.append(NotificationUIItem(
                     icon: "calendar.badge.checkmark",
@@ -53,7 +52,6 @@ final class NotificationsViewModel: ObservableObject {
                 ))
             }
             
-            // Event reminder for upcoming event
             if let upcoming = registrations.first {
                 newItems.append(NotificationUIItem(
                     icon: "bell.badge",
@@ -63,7 +61,6 @@ final class NotificationsViewModel: ObservableObject {
                 ))
             }
             
-            // Waitlist notification (if applicable)
             if registrations.contains(where: { $0.status == .waitlisted }) {
                 if let waitlisted = registrations.first(where: { $0.status == .waitlisted }) {
                     newItems.append(NotificationUIItem(

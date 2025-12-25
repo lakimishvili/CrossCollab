@@ -86,7 +86,7 @@ final class SignUpViewModel: ObservableObject {
     }
     
     // MARK: - Sign Up
-    func validateAndSignUp() {
+    func validateAndSignUp() async {
         let trimmedFirstName = firstName.trimmingCharacters(in: .whitespacesAndNewlines)
         let trimmedLastName = lastName.trimmingCharacters(in: .whitespacesAndNewlines)
         let trimmedEmail = email.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -150,29 +150,27 @@ final class SignUpViewModel: ObservableObject {
         
         isLoading = true
         
-        Task {
-            do {
-                try await appState?.register(
-                    email: trimmedEmail,
-                    password: trimmedPassword,
-                    fullName: fullName,
-                    rememberMe: true
-                )
-                
-                await MainActor.run {
-                    isLoading = false
-                }
-                
-            } catch let error as NetworkError {
-                await MainActor.run {
-                    isLoading = false
-                    showError(error.localizedDescription)
-                }
-            } catch {
-                await MainActor.run {
-                    isLoading = false
-                    showError("An unexpected error occurred")
-                }
+        do {
+            try await appState?.register(
+                email: trimmedEmail,
+                password: trimmedPassword,
+                fullName: fullName,
+                rememberMe: true
+            )
+            
+            await MainActor.run {
+                isLoading = false
+            }
+            
+        } catch let error as NetworkError {
+            await MainActor.run {
+                isLoading = false
+                showError(error.localizedDescription)
+            }
+        } catch {
+            await MainActor.run {
+                isLoading = false
+                showError("An unexpected error occurred")
             }
         }
     }

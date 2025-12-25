@@ -9,14 +9,13 @@ import SwiftUI
 
 struct EventDetailsView: View {
     @StateObject var viewModel: EventDetailsViewModel
-    @Environment(\.dismiss) var dismiss
 
     var body: some View {
         VStack(spacing: 0) {
 
             CustomNavigationBar(
                 title: "Event Details",
-                onBack: { dismiss() }
+                onBack: { viewModel.goBack() }
             )
 
             if viewModel.isLoading {

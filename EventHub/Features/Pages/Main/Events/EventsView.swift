@@ -32,7 +32,9 @@ struct EventsView: View {
                         Text(error)
                             .foregroundColor(.red)
                         Button("Retry") {
-                            viewModel.fetchMyRegistrations()
+                            Task {
+                                await viewModel.fetchMyRegistrations()
+                            }
                         }
                     }
                     
@@ -49,11 +51,11 @@ struct EventsView: View {
             }
             .navigationTitle("My Events")
             .navigationBarTitleDisplayMode(.inline)
-            .onAppear {
-                viewModel.fetchMyRegistrations()
+            .task {
+                await viewModel.fetchMyRegistrations()
             }
             .refreshable {
-                viewModel.fetchMyRegistrations()
+                await viewModel.fetchMyRegistrations()
             }
         }
     }
