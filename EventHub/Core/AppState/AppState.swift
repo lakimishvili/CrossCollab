@@ -17,6 +17,10 @@ final class AppState: ObservableObject {
     @Published var currentUserId: Int?
     @Published var currentUserRole: String?
     @Published var currentUserName: String?
+    @Published var hasUnreadNotifications: Bool = false
+
+    
+    var sessionToken: String?
     
     // MARK: - Init
     init(authService: AuthService = AuthService.shared) {
@@ -27,6 +31,7 @@ final class AppState: ObservableObject {
             self.currentUserId = authService.currentUserId
             self.currentUserRole = authService.currentUserRole
             self.currentUserName = authService.currentUserName
+            self.sessionToken = authService.currentToken
         } else {
             self.currentFlow = .authentication
         }
@@ -37,12 +42,13 @@ final class AppState: ObservableObject {
         let response = try await authService.login(
             email: email,
             password: password,
-            rememberMe: rememberMe 
+            rememberMe: rememberMe
         )
         
         self.currentUserId = response.userId
         self.currentUserRole = response.role
         self.currentUserName = response.fullName
+        self.sessionToken = response.token
         self.currentFlow = .main
     }
     
@@ -58,6 +64,7 @@ final class AppState: ObservableObject {
         self.currentUserId = response.userId
         self.currentUserRole = response.role
         self.currentUserName = response.fullName
+        self.sessionToken = response.token
         self.currentFlow = .main
     }
     
@@ -68,6 +75,7 @@ final class AppState: ObservableObject {
         self.currentUserId = nil
         self.currentUserRole = nil
         self.currentUserName = nil
+        self.sessionToken = nil
         self.currentFlow = .authentication
     }
     

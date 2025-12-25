@@ -14,7 +14,7 @@ final class EventService {
     
     // MARK: - Singleton
     static let shared = EventService(
-        networkService: MockEventService()
+        networkService: RealEventService.shared
     )
     
     // MARK: - Init

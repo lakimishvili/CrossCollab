@@ -104,7 +104,11 @@ struct DateHelper {
         guard let date = parseDate(dateString) else {
             return false
         }
-        return date > Date()
+        
+        let calendar = Calendar.current
+        let now = Date()
+        
+        return calendar.isDateInToday(date) || date > now
     }
     
     static func formatEventDate(_ dateString: String) -> String {

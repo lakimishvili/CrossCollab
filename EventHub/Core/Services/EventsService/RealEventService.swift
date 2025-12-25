@@ -13,14 +13,14 @@ final class RealEventService: EventServiceProtocol {
     private init() {}
     
     private let baseURL = "http://54.93.219.66:8080/api"
+    weak var appState: AppState?
     
     // MARK: - Get Event Types
     func getEventTypes() async throws -> [EventType] {
         let dto: [EventTypeDto] = try await fetch(from: "/Events/types")
-        
         return dto.map { EventType(id: $0.id, name: $0.name, description: $0.description) }
     }
-
+    
     // MARK: - Get Events
     func getEvents(filters: EventFilters? = nil) async throws -> [EventListItem] {
         var endpoint = "/Events"
@@ -35,7 +35,13 @@ final class RealEventService: EventServiceProtocol {
             }
         }
         
-        return try await fetch(from: endpoint)
+        let response: [String: Any] = try await fetchJSON(from: endpoint)
+        guard let dataArray = response["data"] as? [[String: Any]] else {
+            throw NetworkError.decodingFailed
+        }
+        
+        let jsonData = try JSONSerialization.data(withJSONObject: dataArray)
+        return try JSONDecoder().decode([EventListItem].self, from: jsonData)
     }
     
     // MARK: - Get Event Details
@@ -62,19 +68,19 @@ final class RealEventService: EventServiceProtocol {
     
     // MARK: - Get User Registrations
     func getUserRegistrations(userId: Int) async throws -> [UserRegistration] {
-        return try await fetch(from: "/Registrations/user/\(userId)", token: getToken())
+        return try await fetch(from: "/Registrations/user/\(userId)", token: await getToken())
     }
     
     // MARK: - Register for Event
     func registerForEvent(eventId: Int, userId: Int) async throws -> EventRegistration {
         let body = RegistrationRequest(eventId: eventId, userId: userId)
-        let bodyData = try? JSONEncoder().encode(body)
+        let bodyData = try JSONEncoder().encode(body) 
         
         let dto: RegistrationDto = try await fetch(
             from: "/Registrations",
             method: "POST",
             body: bodyData,
-            token: getToken()
+            token: await getToken()
         )
         
         return EventRegistration(
@@ -89,19 +95,51 @@ final class RealEventService: EventServiceProtocol {
     
     // MARK: - Cancel Registration
     func cancelRegistration(registrationId: Int) async throws {
-        guard let userId = KeychainManager.shared.currentUserId else {
+        guard let userId = await appState?.currentUserId else {
             throw NetworkError.unauthorized
         }
         
         let _: EmptyResponse = try await fetch(
             from: "/Registrations/\(registrationId)?userId=\(userId)",
             method: "DELETE",
-            token: getToken()
+            token: await getToken()
         )
     }
+}
+
+// MARK: - Private Methods
+private extension RealEventService {
     
-    // MARK: - Generic Fetch
-    private func fetch<T: Decodable>(
+    func fetchJSON(from endpoint: String) async throws -> [String: Any] {
+        guard let url = URL(string: "\(baseURL)\(endpoint)") else {
+            throw NetworkError.invalidURL
+        }
+        
+        var request = URLRequest(url: url)
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        if let token = await getToken() {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw NetworkError.invalidResponse
+        }
+        
+        guard (200...299).contains(httpResponse.statusCode) else {
+            throw NetworkError.serverError(httpResponse.statusCode)
+        }
+        
+        guard let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            throw NetworkError.decodingFailed
+        }
+        
+        return json
+    }
+    
+    func fetch<T: Decodable>(
         from endpoint: String,
         method: String = "GET",
         body: Data? = nil,
@@ -140,23 +178,22 @@ final class RealEventService: EventServiceProtocol {
             throw NetworkError.serverError(httpResponse.statusCode)
         }
         
-        do {
-            return try JSONDecoder().decode(T.self, from: data)
-        } catch {
-            throw NetworkError.decodingFailed
-        }
+        return try JSONDecoder().decode(T.self, from: data)
     }
     
-    // MARK: - Helper: Get Token from Keychain
-    private func getToken() -> String? {
-        return KeychainManager.shared.loadToken()
+    func getToken() async -> String? {
+        await MainActor.run {
+            if let sessionToken = appState?.sessionToken {
+                return sessionToken
+            }
+            return KeychainManager.shared.loadToken()
+        }
     }
 }
 
-// MARK: - Empty Response (for DELETE endpoints)
+// MARK: - DTOs
 struct EmptyResponse: Codable {}
 
-// MARK: - DTOs that match backend exactly
 struct EventDetailsDto: Codable {
     let id: Int
     let title: String

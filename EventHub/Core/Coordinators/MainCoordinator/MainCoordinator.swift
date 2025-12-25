@@ -17,6 +17,7 @@ class MainCoordinator: ObservableObject, MainCoordinatorProtocol, MainViewProtoc
     
     init(appState: AppState) {
         self.appState = appState
+        RealEventService.shared.appState = appState
     }
     
     func logout() {

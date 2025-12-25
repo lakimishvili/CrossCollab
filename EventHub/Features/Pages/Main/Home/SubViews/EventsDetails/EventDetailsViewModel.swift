@@ -16,6 +16,8 @@ final class EventDetailsViewModel: ObservableObject {
     @Published var isRegistering = false
     @Published var isRegistered = false
     
+    private var registrationId: Int?
+    
     private let eventId: Int
     private let eventService: EventService
     private weak var appState: AppState?
@@ -50,20 +52,38 @@ final class EventDetailsViewModel: ObservableObject {
     }
     
     private func checkRegistrationStatus() async {
-        guard let userId = appState?.currentUserId else { return }
-        
+        guard let userId = appState?.currentUserId else {
+            return
+        }
+                
         do {
             let registration = try await eventService.getUserRegistration(
                 userId: userId,
                 eventId: eventId
             )
-            isRegistered = registration != nil && registration?.status != .cancelled
+            
+            if let reg = registration, reg.status != .cancelled {
+                isRegistered = true
+                registrationId = reg.registrationId
+            } else {
+                isRegistered = false
+                registrationId = nil
+            }
         } catch {
             isRegistered = false
+            registrationId = nil
         }
     }
     
-    func registerForEvent() async {
+    func toggleRegistration() async {
+        if isRegistered {
+            await cancelRegistration()
+        } else {
+            await registerForEvent()
+        }
+    }
+    
+    private func registerForEvent() async {
         guard let userId = appState?.currentUserId else {
             errorMessage = "Please log in"
             return
@@ -72,19 +92,53 @@ final class EventDetailsViewModel: ObservableObject {
         isRegistering = true
         
         do {
-            _ = try await eventService.registerForEvent(eventId: eventId, userId: userId)
-            self.isRegistered = true
+            let registration = try await eventService.registerForEvent(eventId: eventId, userId: userId)
             
-            if var currentEvent = self.event {
-                currentEvent.confirmedCount += 1
-                self.event = currentEvent
+            self.isRegistered = true
+            self.registrationId = registration.id
+            self.isRegistering = false
+        
+        } catch {
+            self.isRegistering = false
+            await loadEvent()
+            await checkRegistrationStatus()
+            
+            if !isRegistered {
+                errorMessage = "Failed to register. Please try again."
             }
+        }
+    }
+    
+    private func cancelRegistration() async {
+        guard let regId = registrationId else {
+            errorMessage = "Registration not found"
+            return
+        }
+        
+        isRegistering = true
+        
+        do {
+            try await eventService.cancelRegistration(registrationId: regId)
+            
+            
+            self.isRegistered = false
+            self.registrationId = nil
+            self.isRegistering = false
+            
+            await loadEvent()
+            
+        } catch {
             
             self.isRegistering = false
             
-        } catch {
-            errorMessage = "Failed to register"
-            isRegistering = false
+            await loadEvent()
+            await checkRegistrationStatus()
+            
+            if isRegistered {
+                errorMessage = "Failed to cancel registration"
+            } else {
+                print(" Cancellation actually succeeded despite error")
+            }
         }
     }
     

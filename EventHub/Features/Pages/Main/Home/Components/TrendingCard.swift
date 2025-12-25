@@ -11,16 +11,15 @@ struct TrendingCard: View {
     
     let title: String
     let date: String
+    let image: String
+    let size: CGFloat
     
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             
             VStack(spacing: 0) {
-                Image("defaultEvent")
-                    .resizable()
-                    .scaledToFill()
-                    .frame(height: 120)
-                    .clipped()
+                
+                PosterView(imageURL: image, size: size)
                 
                 Rectangle()
                     .fill(Color.gray.opacity(0.3))

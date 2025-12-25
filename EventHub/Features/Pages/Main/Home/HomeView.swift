@@ -10,7 +10,8 @@ import SwiftUI
 struct HomeView: View {
     
     @StateObject var viewModel: HomeViewModel
-    @State var showProfile = false
+    @State private var showProfile = false
+    @State private var showCategoryBrowse  = false
     
     var body: some View {
         ScrollView {
@@ -39,6 +40,23 @@ struct HomeView: View {
         .sheet(isPresented: $showProfile) {
             viewModel.coordinator?.makeProfileView()
         }
+        
+        .sheet(isPresented: $showCategoryBrowse) {
+            NavigationStack {
+                BrowseView(viewModel: {
+                    let vm = BrowseViewModel(coordinator: viewModel.coordinator)
+                    vm.initialCategory = viewModel.selectedCategoryName
+                    return vm
+                }())
+                .toolbar {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button("Done") {
+                            showCategoryBrowse = false
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -59,8 +77,12 @@ private extension HomeView {
                     Spacer()
                     
                     HStack(spacing: 16) {
-                        Image(systemName: "bell")
-                        Image(systemName: "person.crop.circle")
+                        Image(systemName: viewModel.hasUnread ? "bell.badge" : "bell")
+                            .font(.title3)
+                        
+                        Image("pfp")
+                            .resizable()
+                            .frame(width: 20, height: 20)
                             .onTapGesture {
                                 showProfile.toggle()
                             }
@@ -103,7 +125,6 @@ private extension HomeView {
                 
                     .onTapGesture {
                         viewModel.viewAllEvents()
-                        print("got tapped")
                     }
             }
             
@@ -164,31 +185,37 @@ private extension HomeView {
                 CategoryItem(icon: "categoryTeam", title: "Team Building", count: "12 events")
                     .onTapGesture {
                         viewModel.viewCategory(categoryName: "Team Building")
+                        showCategoryBrowse  = true
                     }
                 
                 CategoryItem(icon: "categorySport", title: "Sports", count: "8 events")
                     .onTapGesture {
                         viewModel.viewCategory(categoryName: "Sports")
+                        showCategoryBrowse  = true
                     }
                 
                 CategoryItem(icon: "categoryWorkshop", title: "Workshops", count: "18 events")
                     .onTapGesture {
                         viewModel.viewCategory(categoryName: "Workshops")
+                        showCategoryBrowse  = true
                     }
                 
                 CategoryItem(icon: "categoryHappyFridays", title: "Happy Fridays", count: "4 events")
                     .onTapGesture {
                         viewModel.viewCategory(categoryName: "Happy Friday")
+                        showCategoryBrowse  = true
                     }
                 
                 CategoryItem(icon: "categoryCulture", title: "Cultural", count: "6 events")
                     .onTapGesture {
                         viewModel.viewCategory(categoryName: "Cultural")
+                        showCategoryBrowse  = true
                     }
                 
                 CategoryItem(icon: "categoryWellness", title: "Wellness", count: "9 events")
                     .onTapGesture {
                         viewModel.viewCategory(categoryName: "Training")
+                        showCategoryBrowse  = true
                     }
             }
         }
@@ -210,7 +237,9 @@ private extension HomeView {
                     ForEach(viewModel.upcomingEvents.prefix(2)) { event in
                         TrendingCard(
                             title: event.title,
-                            date: DateHelper.formatDate(event.startDateTime, format: "MMM dd, yyyy")
+                            date: DateHelper.formatDate(event.startDateTime, format: "MMM dd, yyyy"),
+                            image: event.imageUrl ?? "",
+                            size: 120
                         )
                         .onTapGesture {
                             viewModel.viewEventDetails(eventId: event.id)

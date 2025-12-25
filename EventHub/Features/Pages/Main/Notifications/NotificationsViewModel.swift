@@ -132,6 +132,8 @@ final class NotificationsViewModel: ObservableObject {
         } catch {
             loadStaticNotifications()
         }
+        
+        appState?.hasUnreadNotifications = !self.newNotifications.isEmpty
     }
     
     private func loadStaticNotifications() {

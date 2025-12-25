@@ -14,12 +14,15 @@ final class HomeViewModel: ObservableObject {
     @Published var upcomingEvents: [EventListItem] = []
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
+    @Published var selectedCategoryName: String?
+
     
     // MARK: - Dependencies
     weak var coordinator: MainCoordinatorProtocol?
     
     private let eventService: EventService
     private weak var appState: AppState?
+    
     
     // MARK: - User Info
     var userName: String {
@@ -28,6 +31,10 @@ final class HomeViewModel: ObservableObject {
     
     var userRole: String {
         appState?.currentUserRole ?? "Employee"
+    }
+    
+    var hasUnread: Bool {
+        appState?.hasUnreadNotifications ?? false
     }
     
     // MARK: - Init
@@ -75,8 +82,7 @@ final class HomeViewModel: ObservableObject {
     
     // MARK: - Navigate to Browse with Category
     func viewCategory(categoryName: String) {
-        // TODO: Navigate to Browse with filter
-        print("View category: \(categoryName)")
+        selectedCategoryName = categoryName
     }
     
     // MARK: - Navigate to all events
@@ -87,4 +93,6 @@ final class HomeViewModel: ObservableObject {
     func goBack() {
         coordinator?.pop()
     }
+    
+    
 }

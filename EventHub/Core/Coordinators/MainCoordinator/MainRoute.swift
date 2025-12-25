@@ -6,7 +6,8 @@
 //
 
 enum MainRoute: Hashable {
-    case allEvents
     case eventDetails(id: Int)
+    case allEvents
     case profile
 }
+

@@ -16,6 +16,8 @@ final class BrowseViewModel: ObservableObject {
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
     
+    var initialCategory: String?
+    
     // MARK: - Filter Properties
     @Published var searchText: String = "" {
         didSet {
@@ -48,17 +50,19 @@ final class BrowseViewModel: ObservableObject {
     
     // MARK: - Fetch Event Types
     func fetchEventTypes() async {
-  
-            do {
-                let types = try await eventService.getEventTypes()
-                
-                await MainActor.run {
-                    self.eventTypes = [EventType(id: 0, name: "All", description: nil)] + types
-                }
-                
-            } catch {
-                print("Failed to fetch event types: \(error)")
-        }
+        do {
+            let types = try await eventService.getEventTypes()
+            
+            self.eventTypes = [EventType(id: 0, name: "All", description: nil)] + types
+            
+            if let initial = initialCategory,
+               let index = eventTypes.firstIndex(where: { $0.name == initial }) {
+                self.selectedCategoryIndex = index
+            }
+            
+        } catch {
+            print("Failed to fetch event types: \(error)")
+        }  
     }
     
     // MARK: - Fetch Events

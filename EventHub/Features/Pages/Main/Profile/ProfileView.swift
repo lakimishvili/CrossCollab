@@ -15,13 +15,13 @@ struct ProfileView: View {
                 .edgesIgnoringSafeArea(.all)
             
             VStack(spacing: 20) {
-                Image(systemName: "person.fill")
+                Image("pfp")
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 100, height: 100)
+                    .frame(width: 200, height: 200)
                     .foregroundColor(.white)
                     .background(Circle().fill(Color.black))
-                    .padding(.top, 20)
+                    .padding()
                 
                 VStack(spacing: 4) {
                     Text(viewModel.currentUserName ?? "Full Name")
