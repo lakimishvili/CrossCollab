@@ -17,8 +17,11 @@ final class RealEventService: EventServiceProtocol {
     
     // MARK: - Get Event Types
     func getEventTypes() async throws -> [EventType] {
-        let dto: [EventTypeDto] = try await fetch(from: "/Events/types")
-        return dto.map { EventType(id: $0.id, name: $0.name, description: $0.description) }
+        let typeNames: [String] = try await fetch(from: "/Events/types")
+        
+        return typeNames.enumerated().map { index, name in
+            EventType(id: index + 1, name: name, description: nil)
+        }
     }
     
     // MARK: - Get Events
@@ -46,6 +49,12 @@ final class RealEventService: EventServiceProtocol {
     
     // MARK: - Get Event Details
     func getEventDetails(id: Int) async throws -> EventDetails {
+        
+        let events = try await getEvents()
+        guard let listItem = events.first(where: { $0.id == id }) else {
+            throw NetworkError.decodingFailed
+        }
+        
         let dto: EventDetailsDto = try await fetch(from: "/Events/\(id)")
         
         return EventDetails(
@@ -55,14 +64,15 @@ final class RealEventService: EventServiceProtocol {
             eventTypeName: dto.eventTypeName,
             startDateTime: dto.startDateTime,
             endDateTime: dto.endDateTime,
-            location: dto.location,
+            location: listItem.location, 
             capacity: dto.capacity,
             confirmedCount: dto.confirmedCount,
             waitlistedCount: dto.waitlistedCount,
             isFull: dto.isFull,
             tags: dto.tags,
             createdBy: dto.createdByName,
-            imageUrl: dto.imageUrl
+            imageUrl: dto.imageUrl,
+            speakers: dto.speakers
         )
     }
     
@@ -74,7 +84,7 @@ final class RealEventService: EventServiceProtocol {
     // MARK: - Register for Event
     func registerForEvent(eventId: Int, userId: Int) async throws -> EventRegistration {
         let body = RegistrationRequest(eventId: eventId, userId: userId)
-        let bodyData = try JSONEncoder().encode(body) 
+        let bodyData = try JSONEncoder().encode(body)
         
         let dto: RegistrationDto = try await fetch(
             from: "/Registrations",
@@ -201,7 +211,7 @@ struct EventDetailsDto: Codable {
     let eventTypeName: String
     let startDateTime: String
     let endDateTime: String
-    let location: String
+    let location: LocationDto?
     let capacity: Int
     let imageUrl: String?
     let confirmedCount: Int
@@ -209,6 +219,7 @@ struct EventDetailsDto: Codable {
     let isFull: Bool
     let tags: [String]
     let createdByName: String
+    let speakers: [SpeakerDto]
 }
 
 struct RegistrationDto: Codable {
@@ -218,11 +229,4 @@ struct RegistrationDto: Codable {
     let status: String
     let registeredAt: String
     let waitlistPosition: Int?
-}
-
-struct EventTypeDto: Codable {
-    let id: Int
-    let name: String
-    let description: String?
-    let isActive: Bool
 }

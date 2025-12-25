@@ -89,7 +89,7 @@ struct BrowseView: View {
                                 category: event.eventTypeName,
                                 title: event.title,
                                 time: formatEventTime(event.startDateTime),
-                                location: event.location,
+                                location: event.locationString,
                                 registeredText: "\(event.confirmedCount) registered",
                                 spotsText: formatSpotsText(event),
                                 statusText: event.isFull ? "Full" : "Available",

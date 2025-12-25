@@ -72,4 +72,19 @@ final class MockNetworkService: NetworkServiceProtocol {
             role: user.user.role
         )
     }
+    
+    func sendVerificationCode(phoneNumber: String) async throws {
+        try await Task.sleep(nanoseconds: delay)
+        print("📱 Mock OTP sent to \(phoneNumber): 123456")
+    }
+    
+    func verifyPhone(phoneNumber: String, code: String) async throws {
+        try await Task.sleep(nanoseconds: delay)
+        
+        guard code == "123456" else {
+            throw NetworkError.serverError(400)
+        }
+        
+        print("✅ Mock OTP verified for \(phoneNumber)")
+    }
 }

@@ -18,7 +18,6 @@ final class AppState: ObservableObject {
     @Published var currentUserRole: String?
     @Published var currentUserName: String?
     @Published var hasUnreadNotifications: Bool = false
-
     
     var sessionToken: String?
     

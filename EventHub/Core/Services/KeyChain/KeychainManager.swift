@@ -84,7 +84,7 @@ final class KeychainManager {
         return loadUserRole()
     }
     
-    var currentUserName: String? { 
+    var currentUserName: String? {
         return loadUserName()
     }
     

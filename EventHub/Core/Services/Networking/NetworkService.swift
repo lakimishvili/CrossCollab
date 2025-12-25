@@ -72,4 +72,30 @@ final class NetworkService: NetworkServiceProtocol {
     func getCurrentUser(token: String) async throws -> UserProfileResponse {
         return try await fetch(from: "/auth/me", token: token)
     }
+    
+    // MARK: - Send OTP
+    func sendVerificationCode(phoneNumber: String) async throws {
+        let body = ["phoneNumber": phoneNumber]
+        let bodyData = try JSONEncoder().encode(body)
+        
+        let _: EmptyOTPResponse = try await fetch(
+            from: "/Auth/send-verification-code",
+            method: "POST",
+            body: bodyData
+        )
+    }
+    
+    // MARK: - Verify OTP
+    func verifyPhone(phoneNumber: String, code: String) async throws {
+        let body = ["phoneNumber": phoneNumber, "code": code]
+        let bodyData = try JSONEncoder().encode(body)
+        
+        let _: EmptyOTPResponse = try await fetch(
+            from: "/Auth/verify-phone",
+            method: "POST",
+            body: bodyData
+        )
+    }
 }
+
+struct EmptyOTPResponse: Codable {}

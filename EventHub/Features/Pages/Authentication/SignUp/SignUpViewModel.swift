@@ -28,15 +28,23 @@ final class SignUpViewModel: ObservableObject {
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
     @Published var showErrorAlert: Bool = false
+    @Published var isPhoneVerified: Bool = false
+    
+    private let networkService: NetworkServiceProtocol
     
     private(set) var departments = ["Engineering", "Marketing", "Sales", "HR", "Finance"]
     private var cancellables = Set<AnyCancellable>()
     weak var coordinator: AuthCoordinatorProtocol?
     private weak var appState: AppState?
     
-    init(coordinator: AuthCoordinatorProtocol? = nil, appState: AppState? = nil) {
+    init(
+        coordinator: AuthCoordinatorProtocol? = nil,
+        appState: AppState? = nil,
+        networkService: NetworkServiceProtocol = NetworkService.shared
+    ) {
         self.coordinator = coordinator
         self.appState = appState
+        self.networkService = networkService
     }
     
     // MARK: - Navigation
@@ -46,23 +54,63 @@ final class SignUpViewModel: ObservableObject {
     }
     
     // MARK: - OTP Methods
-    func sendOTP() {
+    func sendOTP() async {
         guard !phoneNumber.isEmpty else {
-            errorMessage = "Phone number is required"
+            showError("Phone number is required")
             return
         }
         
-        print("Sending OTP to \(phoneNumber)")
-        
-        otpCode = Array(repeating: "", count: 6)
-        timeRemaining = 50
-        isOTPSent = true
-        
-        startTimer()
+        do {
+            try await networkService.sendVerificationCode(phoneNumber: phoneNumber)
+            
+            await MainActor.run {
+                otpCode = Array(repeating: "", count: 6)
+                timeRemaining = 50
+                isOTPSent = true
+                startTimer()
+                print("ðŸ“± OTP sent! Check console for code")
+            }
+            
+        } catch {
+            await MainActor.run {
+                showError("Failed to send OTP. Please try again.")
+            }
+        }
     }
     
-    func resendOTP() {
-        sendOTP()
+    func resendOTP() async {
+        await sendOTP()
+    }
+    
+    func handleOTPInput(at index: Int, oldValue: String, newValue: String) {
+        if newValue.count > 1 {
+            otpCode[index] = String(newValue.last!)
+        }
+        
+        let otpString = otpCode.joined()
+        if otpString.count == 6 {
+            Task {
+                await verifyOTP(code: otpString)
+            }
+        }
+    }
+    
+    private func verifyOTP(code: String) async {
+        do {
+            try await networkService.verifyPhone(phoneNumber: phoneNumber, code: code)
+            
+            await MainActor.run {
+                isPhoneVerified = true
+                print("âœ… Phone verified successfully")
+            }
+            
+        } catch {
+            await MainActor.run {
+                isPhoneVerified = false
+                showError("Invalid OTP code. Please try again.")
+                otpCode = Array(repeating: "", count: 6)
+            }
+        }
     }
     
     private func startTimer() {
@@ -79,12 +127,6 @@ final class SignUpViewModel: ObservableObject {
             .store(in: &cancellables)
     }
     
-    func handleOTPInput(at index: Int, oldValue: String, newValue: String) {
-        if newValue.count > 1 {
-            otpCode[index] = String(newValue.last!)
-        }
-    }
-    
     // MARK: - Sign Up
     func validateAndSignUp() async {
         let trimmedFirstName = firstName.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -95,6 +137,11 @@ final class SignUpViewModel: ObservableObject {
         
         errorMessage = nil
         showErrorAlert = false
+        
+        guard isPhoneVerified else {
+            showError("Please verify your phone number first")
+            return
+        }
         
         guard !trimmedFirstName.isEmpty, !trimmedLastName.isEmpty else {
             showError("First and last name required")
@@ -184,4 +231,6 @@ final class SignUpViewModel: ObservableObject {
         errorMessage = nil
         showErrorAlert = false
     }
+    
+    
 }

@@ -82,7 +82,7 @@ final class EventsViewModel: ObservableObject {
                         title: registration.eventTitle,
                         eventTypeName: registration.eventType,
                         startDateTime: registration.startDateTime,
-                        location: registration.location,
+                        location: registration.locationString,
                         status: registration.status
                     )
                 }

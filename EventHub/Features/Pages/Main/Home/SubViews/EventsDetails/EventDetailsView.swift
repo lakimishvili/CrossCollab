@@ -63,7 +63,7 @@ struct EventDetailsView: View {
                                     text: "\(DateHelper.formatTime(event.startDateTime)) - \(DateHelper.formatTime(event.endDateTime))"
                                 )
                                 
-                                InfoRow(icon: "location.fill", text: event.location)
+                                InfoRow(icon: "location.fill", text: event.locationString)
                                 
                                 InfoRow(
                                     icon: "person.3.fill",
@@ -148,17 +148,20 @@ struct EventDetailsView: View {
                                 Text("Featured Speakers")
                                     .font(.headline)
                                 
-                                SpeakerRow(
-                                    name: "Sarah Johnson",
-                                    role: "VP of Human Resources",
-                                    imageName: "pfp"
-                                )
-                                
-                                SpeakerRow(
-                                    name: "David Chen",
-                                    role: "Lead Corporate Trainer",
-                                    imageName: "pfp"
-                                )
+                                if event.speakers.isEmpty {
+                                    Text("No speakers announced yet")
+                                        .font(.subheadline)
+                                        .foregroundColor(.gray)
+                                        .padding(.vertical, 8)
+                                } else {
+                                    ForEach(event.speakers) { speaker in
+                                        SpeakerRow(
+                                            name: speaker.name,
+                                            role: speaker.title ?? "Speaker",
+                                            imageName: "pfp"
+                                        )
+                                    }
+                                }
                             }
                         }
                         .padding(.horizontal)

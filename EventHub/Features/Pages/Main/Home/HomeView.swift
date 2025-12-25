@@ -160,7 +160,7 @@ private extension HomeView {
                             date: DateHelper.formatEventDate(event.startDateTime),
                             title: event.title,
                             time: DateHelper.formatEventTime(event.startDateTime),
-                            location: event.location,
+                            location: event.locationString,
                             footer: DateHelper.formatEventFooter(event),
                             isDisabled: event.isFull
                         )

@@ -62,7 +62,7 @@ final class BrowseViewModel: ObservableObject {
             
         } catch {
             print("Failed to fetch event types: \(error)")
-        }  
+        }
     }
     
     // MARK: - Fetch Events
@@ -70,24 +70,24 @@ final class BrowseViewModel: ObservableObject {
         isLoading = true
         errorMessage = nil
         
-            do {
-                let events = try await eventService.getEvents(filters: nil)
-                
-                await MainActor.run {
-                    self.events = events
-                    self.isLoading = false
-                }
-                
-            } catch let error as NetworkError {
-                await MainActor.run {
-                    self.isLoading = false
-                    self.errorMessage = error.localizedDescription
-                }
-            } catch {
-                await MainActor.run {
-                    self.isLoading = false
-                    self.errorMessage = "Failed to load events"
-                }
+        do {
+            let events = try await eventService.getEvents(filters: nil)
+            
+            await MainActor.run {
+                self.events = events
+                self.isLoading = false
+            }
+            
+        } catch let error as NetworkError {
+            await MainActor.run {
+                self.isLoading = false
+                self.errorMessage = error.localizedDescription
+            }
+        } catch {
+            await MainActor.run {
+                self.isLoading = false
+                self.errorMessage = "Failed to load events"
+            }
         }
     }
     

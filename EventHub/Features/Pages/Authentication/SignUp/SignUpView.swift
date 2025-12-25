@@ -47,7 +47,11 @@ struct SignUpView: View {
                     
                     NumberInputView(
                         number: $viewModel.phoneNumber,
-                        action: viewModel.sendOTP
+                        action: {
+                            Task {
+                                await viewModel.sendOTP()
+                            }
+                        }
                     )
                     
                     HStack {
@@ -65,11 +69,26 @@ struct SignUpView: View {
                         otpCode: $viewModel.otpCode,
                         timeRemaining: $viewModel.timeRemaining,
                         isOTPSent: $viewModel.isOTPSent,
-                        onResend: viewModel.resendOTP,
+                        onResend: {
+                            Task {
+                                await viewModel.resendOTP()
+                            }
+                        },
                         onOTPChange: { index, oldValue, newValue in
                             viewModel.handleOTPInput(at: index, oldValue: oldValue, newValue: newValue)
                         }
                     )
+                    
+                    if viewModel.isPhoneVerified {
+                        HStack {
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundColor(.green)
+                            Text("Phone verified")
+                                .font(.caption)
+                                .foregroundColor(.green)
+                        }
+                        .padding(.top, 4)
+                    }
                     
                     CustomPicker(
                         title: "Department",
@@ -107,7 +126,7 @@ struct SignUpView: View {
                         title: viewModel.isLoading ? "Creating Account..." : "Create Account",
                         action: {
                             Task {
-                               await viewModel.validateAndSignUp()
+                                await viewModel.validateAndSignUp()
                             }
                         }
                     )
