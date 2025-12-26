@@ -50,6 +50,7 @@ struct CustomTextField: View {
             .padding()
             .font(.callout)
             .autocorrectionDisabled()
+            .textContentType(.none)
             .textInputAutocapitalization(.never)
             .overlay(
                 RoundedRectangle(cornerRadius: 5)

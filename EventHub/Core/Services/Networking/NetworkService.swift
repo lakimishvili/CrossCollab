@@ -32,10 +32,23 @@ final class NetworkService: NetworkServiceProtocol {
             request.httpBody = body
         }
         
+        // ✅ Print full request details
+        print("🌐 REQUEST: \(method) \(url)")
+        print("📋 HEADERS: \(request.allHTTPHeaderFields ?? [:])")
+        if let bodyData = body, let bodyString = String(data: bodyData, encoding: .utf8) {
+            print("📤 BODY: \(bodyString)")
+        }
+        
         let (data, response) = try await URLSession.shared.data(for: request)
         
         guard let httpResponse = response as? HTTPURLResponse else {
             throw NetworkError.invalidResponse
+        }
+        
+        print("📥 RESPONSE STATUS: \(httpResponse.statusCode)")
+        
+        if let responseString = String(data: data, encoding: .utf8) {
+            print("📥 RESPONSE BODY: \(responseString)")
         }
         
         guard (200...299).contains(httpResponse.statusCode) else {
@@ -48,6 +61,7 @@ final class NetworkService: NetworkServiceProtocol {
         do {
             return try JSONDecoder().decode(T.self, from: data)
         } catch {
+            print("❌ DECODE ERROR: \(error)")
             throw NetworkError.decodingFailed
         }
     }
@@ -61,12 +75,30 @@ final class NetworkService: NetworkServiceProtocol {
     }
     
     // MARK: - Register
-    func register(email: String, password: String, fullName: String) async throws -> LoginResponse {
-        let body = RegisterRequest(email: email, password: password, fullName: fullName)
-        let bodyData = try? JSONEncoder().encode(body)
+    func register(
+        email: String,
+        phoneNumber: String,
+        otpCode: String,
+        password: String,
+        fullName: String
+    ) async throws -> LoginResponse {
+        let body = RegisterRequest(
+            email: email,
+            phoneNumber: phoneNumber,
+            otpCode: otpCode,
+            password: password,
+            fullName: fullName
+        )
+        let bodyData = try JSONEncoder().encode(body)
         
-        return try await fetch(from: "/auth/register", method: "POST", body: bodyData)
+        if let jsonString = String(data: bodyData, encoding: .utf8) {
+            print("📤 SENDING REGISTRATION:")
+            print(jsonString)
+        }
+        
+        return try await fetch(from: "/Auth/register", method: "POST", body: bodyData)
     }
+
     
     // MARK: - Get Current User
     func getCurrentUser(token: String) async throws -> UserProfileResponse {
@@ -74,27 +106,34 @@ final class NetworkService: NetworkServiceProtocol {
     }
     
     // MARK: - Send OTP
-    func sendVerificationCode(phoneNumber: String) async throws {
-        let body = ["phoneNumber": phoneNumber]
+    func sendRegistrationOtp(email: String, phoneNumber: String) async throws {
+        let body = SendRegistrationOtpRequest(email: email, phoneNumber: phoneNumber)
         let bodyData = try JSONEncoder().encode(body)
         
-        let _: EmptyOTPResponse = try await fetch(
-            from: "/Auth/send-verification-code",
+        if let jsonString = String(data: bodyData, encoding: .utf8) {
+            print("📤 SENDING REGISTRATION OTP:")
+            print(jsonString)
+        }
+        
+        let _: [String: String] = try await fetch(
+            from: "/Auth/send-registration-otp",
             method: "POST",
             body: bodyData
         )
     }
     
-    // MARK: - Verify OTP
+    // MARK: - Verify OTP (NEW ENDPOINT)
     func verifyPhone(phoneNumber: String, code: String) async throws {
         let body = ["phoneNumber": phoneNumber, "code": code]
         let bodyData = try JSONEncoder().encode(body)
         
-        let _: EmptyOTPResponse = try await fetch(
-            from: "/Auth/verify-phone",
+        let response: [String: String] = try await fetch(
+            from: "/Verification/verify-code",
             method: "POST",
             body: bodyData
         )
+        
+        print("✅ Verify Response: \(response)")
     }
 }
 

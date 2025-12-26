@@ -37,6 +37,8 @@ final class SignUpViewModel: ObservableObject {
     weak var coordinator: AuthCoordinatorProtocol?
     private weak var appState: AppState?
     
+    private var verifiedOtpCode: String = ""
+    
     init(
         coordinator: AuthCoordinatorProtocol? = nil,
         appState: AppState? = nil,
@@ -47,28 +49,32 @@ final class SignUpViewModel: ObservableObject {
         self.networkService = networkService
     }
     
-    // MARK: - Navigation
-    
     func goSignInPage() {
         coordinator?.navigate(to: .signIn)
     }
     
-    // MARK: - OTP Methods
     func sendOTP() async {
+        let trimmedEmail = email.trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        guard !trimmedEmail.isEmpty else {
+            showError("Email is required to send OTP")
+            return
+        }
+        
         guard !phoneNumber.isEmpty else {
             showError("Phone number is required")
             return
         }
         
         do {
-            try await networkService.sendVerificationCode(phoneNumber: phoneNumber)
+            try await networkService.sendRegistrationOtp(email: trimmedEmail, phoneNumber: phoneNumber)
             
             await MainActor.run {
                 otpCode = Array(repeating: "", count: 6)
                 timeRemaining = 50
                 isOTPSent = true
                 startTimer()
-                print("ðŸ“± OTP sent! Check console for code")
+                print("📱 Registration OTP sent! Check console for code")
             }
             
         } catch {
@@ -89,27 +95,9 @@ final class SignUpViewModel: ObservableObject {
         
         let otpString = otpCode.joined()
         if otpString.count == 6 {
-            Task {
-                await verifyOTP(code: otpString)
-            }
-        }
-    }
-    
-    private func verifyOTP(code: String) async {
-        do {
-            try await networkService.verifyPhone(phoneNumber: phoneNumber, code: code)
-            
-            await MainActor.run {
-                isPhoneVerified = true
-                print("âœ… Phone verified successfully")
-            }
-            
-        } catch {
-            await MainActor.run {
-                isPhoneVerified = false
-                showError("Invalid OTP code. Please try again.")
-                otpCode = Array(repeating: "", count: 6)
-            }
+            verifiedOtpCode = otpString
+            isPhoneVerified = true
+            print("✅ OTP entered: \(otpString)")
         }
     }
     
@@ -127,7 +115,6 @@ final class SignUpViewModel: ObservableObject {
             .store(in: &cancellables)
     }
     
-    // MARK: - Sign Up
     func validateAndSignUp() async {
         let trimmedFirstName = firstName.trimmingCharacters(in: .whitespacesAndNewlines)
         let trimmedLastName = lastName.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -140,6 +127,16 @@ final class SignUpViewModel: ObservableObject {
         
         guard isPhoneVerified else {
             showError("Please verify your phone number first")
+            return
+        }
+        
+        guard !verifiedOtpCode.isEmpty else {
+            showError("Please enter the OTP code")
+            return
+        }
+        
+        guard !phoneNumber.isEmpty else {
+            showError("Phone number is required")
             return
         }
         
@@ -200,6 +197,8 @@ final class SignUpViewModel: ObservableObject {
         do {
             try await appState?.register(
                 email: trimmedEmail,
+                phoneNumber: phoneNumber,
+                otpCode: verifiedOtpCode,
                 password: trimmedPassword,
                 fullName: fullName,
                 rememberMe: true
@@ -231,6 +230,4 @@ final class SignUpViewModel: ObservableObject {
         errorMessage = nil
         showErrorAlert = false
     }
-    
-    
 }

@@ -46,17 +46,19 @@ struct LoginResponse: Codable {
     }
 }
 
-// MARK: - Register Request
+// MARK: - Send Registration OTP Request
+struct SendRegistrationOtpRequest: Codable {
+    let email: String
+    let phoneNumber: String
+}
+
+// MARK: - Register Request (UPDATED!)
 struct RegisterRequest: Codable {
     let email: String
+    let phoneNumber: String
+    let otpCode: String     
     let password: String
     let fullName: String
-    
-    enum CodingKeys: String, CodingKey {
-        case email
-        case password
-        case fullName
-    }
 }
 
 // MARK: - Login Request

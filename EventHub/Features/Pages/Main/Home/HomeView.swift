@@ -180,42 +180,42 @@ private extension HomeView {
     var categoriesSection: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Browse by Category")
-                        
+            
             LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 3), spacing: 12) {
                 CategoryItem(icon: "categoryTeam", title: "Team Building", count: "12 events")
                     .onTapGesture {
                         viewModel.viewCategory(categoryName: "Team Building")
-                        showCategoryBrowse  = true
+                        showCategoryBrowse = true
                     }
                 
                 CategoryItem(icon: "categorySport", title: "Sports", count: "8 events")
                     .onTapGesture {
                         viewModel.viewCategory(categoryName: "Sports")
-                        showCategoryBrowse  = true
+                        showCategoryBrowse = true
                     }
                 
                 CategoryItem(icon: "categoryWorkshop", title: "Workshops", count: "18 events")
                     .onTapGesture {
-                        viewModel.viewCategory(categoryName: "Workshops")
-                        showCategoryBrowse  = true
+                        viewModel.viewCategory(categoryName: "Workshop")  
+                        showCategoryBrowse = true
                     }
                 
                 CategoryItem(icon: "categoryHappyFridays", title: "Happy Fridays", count: "4 events")
                     .onTapGesture {
                         viewModel.viewCategory(categoryName: "Happy Friday")
-                        showCategoryBrowse  = true
+                        showCategoryBrowse = true
                     }
                 
                 CategoryItem(icon: "categoryCulture", title: "Cultural", count: "6 events")
                     .onTapGesture {
                         viewModel.viewCategory(categoryName: "Cultural")
-                        showCategoryBrowse  = true
+                        showCategoryBrowse = true
                     }
                 
                 CategoryItem(icon: "categoryWellness", title: "Wellness", count: "9 events")
                     .onTapGesture {
                         viewModel.viewCategory(categoryName: "Training")
-                        showCategoryBrowse  = true
+                        showCategoryBrowse = true
                     }
             }
         }

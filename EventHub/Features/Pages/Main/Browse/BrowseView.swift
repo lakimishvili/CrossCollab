@@ -21,19 +21,15 @@ struct BrowseView: View {
             
             EventSearchView(text: $viewModel.searchText)
             
-            if !viewModel.eventTypes.isEmpty {
-                CategoryChipsView(
-                    categories: viewModel.eventTypes.map { $0.name },
-                    selectedIndex: viewModel.selectedCategoryIndex,
-                    onSelect: { index in
-                        viewModel.selectedCategoryIndex = index
-                    }
-                )
-                .padding(.vertical, 8)
-                .background(Color("customWhite"))
-            }
+            CategoryChipsView(
+                categories: viewModel.eventTypes.isEmpty ? ["All"] : viewModel.eventTypes.map { $0.name },
+                selectedIndex: viewModel.selectedCategoryIndex,
+                onSelect: { index in
+                    viewModel.selectedCategoryIndex = index
+                }
+            )
+            .padding(.vertical)
             
-            // Loading State
             if viewModel.isLoading {
                 Spacer()
                 ProgressView()
@@ -107,8 +103,9 @@ struct BrowseView: View {
         .background(Color("customWhite"))
         .navigationBarHidden(true)
         .task {
+            await viewModel.fetchEventTypes()
+            
             if viewModel.events.isEmpty {
-                await viewModel.fetchEventTypes()
                 await viewModel.fetchEvents()
             }
         }

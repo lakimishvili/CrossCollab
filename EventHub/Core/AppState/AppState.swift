@@ -51,10 +51,22 @@ final class AppState: ObservableObject {
         self.currentFlow = .main
     }
     
-    // MARK: - Register
-    func register(email: String, password: String, fullName: String, rememberMe: Bool = true) async throws {
+    func sendRegistrationOtp(email: String, phoneNumber: String) async throws {
+        try await authService.sendRegistrationOtp(email: email, phoneNumber: phoneNumber)
+    }
+    
+    func register(
+        email: String,
+        phoneNumber: String,
+        otpCode: String,
+        password: String,
+        fullName: String,
+        rememberMe: Bool = true
+    ) async throws {
         let response = try await authService.register(
             email: email,
+            phoneNumber: phoneNumber,
+            otpCode: otpCode,
             password: password,
             fullName: fullName,
             rememberMe: rememberMe

@@ -38,8 +38,39 @@ final class MockNetworkService: NetworkServiceProtocol {
         return mockUser.user
     }
     
-    func register(email: String, password: String, fullName: String) async throws -> LoginResponse {
+    func getCurrentUser(token: String) async throws -> UserProfileResponse {
         try await Task.sleep(nanoseconds: delay)
+        
+        guard let user = mockUsers.values.first(where: { $0.user.token == token }) else {
+            throw NetworkError.unauthorized
+        }
+        
+        return UserProfileResponse(
+            id: user.user.userId,
+            email: mockUsers.first(where: { $0.value.user.token == token })?.key ?? "",
+            fullName: user.user.fullName,
+            role: user.user.role
+        )
+    }
+    
+    func sendRegistrationOtp(email: String, phoneNumber: String) async throws {
+        try await Task.sleep(nanoseconds: delay)
+        print("📱 Mock Registration OTP sent to \(phoneNumber) for \(email): 123456")
+    }
+    
+    func register(
+        email: String,
+        phoneNumber: String,
+        otpCode: String,
+        password: String,
+        fullName: String
+    ) async throws -> LoginResponse {
+        try await Task.sleep(nanoseconds: delay)
+        
+        // Mock: Accept "123456" as valid OTP
+        guard otpCode == "123456" else {
+            throw NetworkError.serverError(400)
+        }
         
         if mockUsers[email] != nil {
             throw NetworkError.serverError(409)
@@ -56,35 +87,5 @@ final class MockNetworkService: NetworkServiceProtocol {
         mockUsers[email] = (password: password, user: newUser)
         
         return newUser
-    }
-    
-    func getCurrentUser(token: String) async throws -> UserProfileResponse {
-        try await Task.sleep(nanoseconds: delay)
-        
-        guard let user = mockUsers.values.first(where: { $0.user.token == token }) else {
-            throw NetworkError.unauthorized
-        }
-        
-        return UserProfileResponse(
-            id: user.user.userId,
-            email: mockUsers.first(where: { $0.value.user.token == token })?.key ?? "",
-            fullName: user.user.fullName,
-            role: user.user.role
-        )
-    }
-    
-    func sendVerificationCode(phoneNumber: String) async throws {
-        try await Task.sleep(nanoseconds: delay)
-        print("📱 Mock OTP sent to \(phoneNumber): 123456")
-    }
-    
-    func verifyPhone(phoneNumber: String, code: String) async throws {
-        try await Task.sleep(nanoseconds: delay)
-        
-        guard code == "123456" else {
-            throw NetworkError.serverError(400)
-        }
-        
-        print("✅ Mock OTP verified for \(phoneNumber)")
     }
 }

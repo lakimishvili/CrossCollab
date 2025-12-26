@@ -17,10 +17,21 @@ final class RealEventService: EventServiceProtocol {
     
     // MARK: - Get Event Types
     func getEventTypes() async throws -> [EventType] {
-        let typeNames: [String] = try await fetch(from: "/Events/types")
+        print("🌐 Calling /Events/types endpoint...")
         
-        return typeNames.enumerated().map { index, name in
-            EventType(id: index + 1, name: name, description: nil)
+        do {
+            // ✅ Backend returns array of EventType objects
+            let types: [EventType] = try await fetch(
+                from: "/Events/types",
+                token: await getToken()
+            )
+            
+            print("✅ Fetched \(types.count) event types: \(types.map { $0.name })")
+            return types
+            
+        } catch {
+            print("❌ getEventTypes error: \(error)")
+            throw error
         }
     }
     

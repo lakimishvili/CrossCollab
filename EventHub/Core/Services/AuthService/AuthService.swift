@@ -40,8 +40,21 @@ final class AuthService {
     }
     
     // MARK: - Register
-    func register(email: String, password: String, fullName: String, rememberMe: Bool) async throws -> LoginResponse {
-        let response = try await networkService.register(email: email, password: password, fullName: fullName)
+    func register(
+        email: String,
+        phoneNumber: String,
+        otpCode: String,
+        password: String,
+        fullName: String,
+        rememberMe: Bool
+    ) async throws -> LoginResponse {
+        let response = try await networkService.register(
+            email: email,
+            phoneNumber: phoneNumber,
+            otpCode: otpCode,
+            password: password,
+            fullName: fullName
+        )
         
         if rememberMe {
             _ = keychainManager.saveToken(response.token)
@@ -53,6 +66,9 @@ final class AuthService {
         return response
     }
     
+    func sendRegistrationOtp(email: String, phoneNumber: String) async throws {
+        try await networkService.sendRegistrationOtp(email: email, phoneNumber: phoneNumber)
+    }
     
     // MARK: - Logout
     func logout() {
